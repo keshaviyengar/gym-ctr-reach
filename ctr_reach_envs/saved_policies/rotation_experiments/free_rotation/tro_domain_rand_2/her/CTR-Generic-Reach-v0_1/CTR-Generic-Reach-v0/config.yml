@@ -1,0 +1,44 @@
+!!python/object/apply:collections.OrderedDict
+- - - actor_lr
+    - 0.0005
+  - - batch_size
+    - 256
+  - - buffer_size
+    - 10000
+  - - critic_lr
+    - 0.0005
+  - - gamma
+    - 0.95
+  - - goal_selection_strategy
+    - future
+  - - model_class
+    - ddpg
+  - - n_sampled_goal
+    - 4
+  - - n_timesteps
+    - 2000000.0
+  - - nb_eval_steps
+    - 200
+  - - noise_std
+    - - 0.001
+      - 0.001
+      - 0.001
+      - 0.025
+      - 0.025
+      - 0.025
+  - - noise_type
+    - normal
+  - - normalize_observations
+    - false
+  - - normalize_returns
+    - false
+  - - policy
+    - MlpPolicy
+  - - policy_kwargs
+    - dict(layers=[128, 128, 128])
+  - - random_exploration
+    - 0.294
+  - - render
+    - false
+  - - render_eval
+    - false

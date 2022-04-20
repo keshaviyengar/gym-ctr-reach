@@ -1,0 +1,1 @@
+Logging to /home/ucabkki/Scratch/output/logs/four_systems/tro_four_systems_0

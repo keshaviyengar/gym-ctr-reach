@@ -1,5 +1,5 @@
 import gym
-import ctr_generic_envs
+import ctr_reach_envs
 
 import numpy as np
 import pandas as pd
@@ -19,13 +19,11 @@ if __name__ == '__main__':
     gen_model_path = "/her/CTR-Generic-Reach-v0_1/CTR-Generic-Reach-v0.zip"
     #gen_model_path = "/her/CTR-Generic-Reach-v0_1/best_model.zip"
 
-    project_folder = '/home/keshav/ctm2-stable-baselines/saved_results/tro_2021/tro_results/generic_policy_experiments/'
-    #project_folder = '/home/keshav/ctm2-stable-baselines/saved_results/tro_2021/tro_results/old_rotation_experiments/rotation_experiments/'
-    #project_folder = '/home/keshav/ctm2-stable-baselines/saved_results/tro_2021/tro_results/rotation_experiments/'
-    name = 'four_systems/tro_four_systems_0'
-    #name = 'free_rotation/tro_free_0'
+    project_folder = '/home/keshav/ctm2-stable-baselines/gym-ctr-reach/ctr_reach_envs/saved_policies/'
+    #name = 'four_systems/tro_four_systems_0'
+    name = 'rotation_experiments/free_rotation/tro_free_0'
     #name = 'constrain_rotation/tro_constrain_0'
-    selected_systems = [0, 1, 2, 3]
+    selected_systems = [0]
     path_type = 'line'
 
     noisy_env = False
@@ -49,9 +47,9 @@ if __name__ == '__main__':
         }
 
     # Env and model names and paths
-    env_id = "CTR-Generic-Reach-v0"
-    env_kwargs = {'evaluation': True, 'relative_q': True, 'resample_joints': False, 'constrain_alpha': False,
-                  'num_systems': len(selected_systems), 'select_systems': selected_systems,
+    env_id = "CTR-Reach-v0"
+    env_kwargs = {'evaluation': True, 'joint_representation': 'egocentric', 'resample_joints': False, 'constrain_alpha': False,
+                  'select_systems': selected_systems,
                   'goal_tolerance_parameters': {'inc_tol_obs': True, 'initial_tol': 0.020, 'final_tol': 0.001,
                                                 'N_ts': 200000, 'function': 'constant', 'set_tol': 0.001},
                   'noise_parameters': noise_parameters,

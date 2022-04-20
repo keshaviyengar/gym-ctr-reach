@@ -1,0 +1,21 @@
+constrain_alpha: false
+domain_rand: 0.05
+goal_tolerance_parameters:
+  N_ts: 1000000.0
+  final_tol: 0.001
+  function: decay
+  inc_tol_obs: true
+  initial_tol: 0.02
+  set_tol: 0.001
+initial_q:
+- 0
+- 0
+- 0
+- 0
+- 0
+- 0
+num_systems: 1
+relative_q: true
+resample_joints: true
+select_systems:
+- 2

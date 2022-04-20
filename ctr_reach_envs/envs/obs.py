@@ -80,11 +80,15 @@ class Obs(object):
         final_tol = self.goal_tolerance.final_tol
         rep_space = self.get_rep_space()
 
-        # Set overall goal error min and max
-        del_x_y_min = -0.5
-        del_x_y_max = 0.5
-        del_z_min = 0.0
-        del_z_max = 0.5
+        # Set overall goal error min and max TODO: Old values, no difference because not used to constrain
+        del_x_y_min = -0.2
+        del_x_y_max = 0.2
+        del_z_min = -0.2
+        del_z_max = 0.2
+        #del_x_y_min = -0.5
+        #del_x_y_max = 0.5
+        #del_z_min = 0.0
+        #del_z_max = 0.5
 
         # If training a single system, don, include the psi variable indicating system
         if self.num_systems == 1:
@@ -99,10 +103,11 @@ class Obs(object):
             obs_space_high = np.concatenate(
                 (rep_space.high, np.array([del_x_y_max, del_x_y_max, del_z_max, initial_tol, self.num_systems - 1])))
         observation_space = gym.spaces.Dict(dict(
-            desired_goal=gym.spaces.Box(low=np.array([del_x_y_min, del_x_y_min, del_z_min]),
-                                        high=np.array([del_x_y_max, del_x_y_max, del_z_max]), dtype="float32"),
-            achieved_goal=gym.spaces.Box(low=np.array([del_x_y_min, del_x_y_min, del_z_min]),
-                                         high=np.array([del_x_y_max, del_x_y_max, del_z_max]), dtype="float32"),
+            # TODO: low and high values from previous environment.
+            desired_goal=gym.spaces.Box(low=np.array([-0.1, -0.1, 0]),
+                                        high=np.array([0.1, 0.1, 0.2]), dtype="float32"),
+            achieved_goal=gym.spaces.Box(low=np.array([-0.1, -0.1, 0]),
+                                         high=np.array([0.1, 0.1, 0.2]), dtype="float32"),
             observation=gym.spaces.Box(
                 low=obs_space_low,
                 high=obs_space_high,

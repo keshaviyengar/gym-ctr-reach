@@ -12,9 +12,6 @@ class GoalTolerance(object):
         valid_functions = ['constant', 'linear', 'decay']
         assert self.function in valid_functions, 'Not a valid function. Choose constant, linear or decay.'
 
-        if self.function == 'constant':
-            self.init_tol = self.final_tol
-
         if self.function == 'linear':
             self.a = (self.final_tol - self.init_tol) / self.N_ts
             self.b = self.init_tol
