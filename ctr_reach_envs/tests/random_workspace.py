@@ -1,5 +1,5 @@
 import gym
-import ctr_generic_envs
+import ctr_reach_envs
 
 from gym.wrappers import FlattenDictWrapper
 import numpy as np
@@ -50,7 +50,7 @@ def plot_points(points):
 
 
 if __name__ == '__main__':
-    spec = gym.spec('CTR-Generic-Reach-v0')
+    spec = gym.spec('CTR-Reach-v0')
     kwargs = {"resample_joints": True}
     sampled_positions = random_reset(spec, 1000, kwargs)
     plot_points(sampled_positions)

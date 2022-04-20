@@ -1,4 +1,5 @@
 import gym
+import ctr_reach_envs
 
 from gym.wrappers import FlattenDictWrapper
 import numpy as np

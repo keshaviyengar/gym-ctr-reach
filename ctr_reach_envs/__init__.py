@@ -4,7 +4,7 @@ import numpy as np
 register(
     id='CTR-Reach-v0', entry_point='ctr_reach_envs.envs:CtrReachEnv',
     kwargs={
-        'ctr_systems': {
+        'ctr_systems_parameters': {
             # Autonomous steering by Mohsen Khadem
             'ctr_0': {
                 'tube_0':
@@ -69,9 +69,9 @@ register(
                      'stiffness': 5.0e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 20.04, 'y_curvature': 0}
             },
         },
-        'action_length_limit': 0.001,
-        'action_rotation_limit': 5,
-        'max_episode_steps': 150,
+        'extension_action_limit': 0.001,
+        'rotation_action_limit': 5,
+        'max_steps_per_episode': 150,
         'n_substeps': 10,
         'goal_tolerance_parameters': {
             'inc_tol_obs': False, 'initial_tol': 0.020, 'final_tol': 0.001,
@@ -82,9 +82,10 @@ register(
             # 0.001 is also the tracking std deviation for now for testing.
             'rotation_std': np.deg2rad(0), 'extension_std': 0.001 * np.deg2rad(0), 'tracking_std': 0.0
         },
+        'select_systems': [0],
         'constrain_alpha': False,
         # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
-        'initial_joints': [0, 0, 0, 0, 0, 0],
+        'initial_joints': np.array([0, 0, 0, 0, 0, 0]),
         'joint_representation': 'egocentric',
         'resample_joints': False,
         'render': False,

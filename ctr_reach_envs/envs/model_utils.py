@@ -1,5 +1,5 @@
 import numpy as np
-from CTR_Python import Tube
+from ctr_reach_envs.envs.CTR_Python import Tube
 
 
 def sample_parameters(tube_parameters, randomization):

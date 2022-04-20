@@ -23,7 +23,7 @@ class GoalTolerance(object):
             self.a = self.init_tol
             self.r = 1 - np.power((self.final_tol / self.init_tol), 1 / self.N_ts)
 
-        self.set_tol_value = self.goal_tolerance_parameters['set_tolerance']
+        self.set_tol_value = self.goal_tolerance_parameters['set_tol']
         if self.set_tol_value == 0:
             self.current_tol = self.init_tol
         else:

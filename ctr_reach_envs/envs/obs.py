@@ -1,8 +1,8 @@
 import numpy as np
 import gym
 
-from goal_tolerance import GoalTolerance
-from obs_utils import *
+from ctr_reach_envs.envs.goal_tolerance import GoalTolerance
+from ctr_reach_envs.envs.obs_utils import *
 
 NUM_TUBES = 3
 EXT_TOL = 1e-3

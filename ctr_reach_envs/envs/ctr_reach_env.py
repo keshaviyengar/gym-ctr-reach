@@ -1,37 +1,35 @@
 import gym
 import numpy as np
-from obs import Obs
-from goal_tolerance import GoalTolerance
-from model import Model
+from ctr_reach_envs.envs.obs import Obs
+from ctr_reach_envs.envs.goal_tolerance import GoalTolerance
+from ctr_reach_envs.envs.model import Model
 
-from CTR_Python import Tube
+from ctr_reach_envs.envs.CTR_Python import Tube
 
 NUM_TUBES = 3
 
 
 class CtrReachEnv(gym.GoalEnv):
-    def __init__(self, system_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
-                 initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit, max_step_per_episode,
+    def __init__(self, ctr_systems_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
+                 initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit, max_steps_per_episode,
                  n_substeps, evaluation, render, select_systems, resample_joints=True, length_based_sample=False,
                  domain_rand=0.0):
 
         # Load in all system parameters
-        self.system_parameters = list()
-        for system in system_parameters:
+        self.ctr_system_parameters = list()
+        for system in ctr_systems_parameters:
             tubes = list()
-            for tube in system:
-                tubes.append(Tube(**tube))
-            self.system_parameters.append(tubes)
+            for tube in ctr_systems_parameters[system]:
+                tubes.append(Tube(**ctr_systems_parameters[system][tube]))
+            self.ctr_system_parameters.append(tubes)
 
         # Remove unused systems based of select_systems
         self.select_systems = select_systems
-        self.system_parameters = self.system_parameters[select_systems]
+        self.ctr_system_parameters = [self.ctr_system_parameters[system] for system in select_systems]
         self.noise_parameters = noise_parameters
         assert joint_representation in ['egocentric', 'proprioceptive']
         self.joint_representation = joint_representation
-        self.extension_action_limit = extension_action_limit
-        self.rotation_action_limit = rotation_action_limit
-        self.max_steps_per_episode = max_step_per_episode
+        self.max_steps_per_episode = max_steps_per_episode
         self.n_substeps = n_substeps
         # Other parameters and settings
         self.starting_joints = initial_joints
@@ -44,12 +42,22 @@ class CtrReachEnv(gym.GoalEnv):
         self.domain_rand = domain_rand
 
         # CTR kinematic model
-        self.model = Model(self.system_parameters)
+        self.model = Model(self.ctr_system_parameters)
 
         # Initialization parameters / objects
         self.t = 0
-        self.trig_obj = Obs(system_parameters, goal_tolerance_parameters, noise_parameters, initial_joints,
+        self.trig_obj = Obs(self.ctr_system_parameters, goal_tolerance_parameters, noise_parameters, initial_joints,
                             joint_representation, constrain_alpha)
+        self.observation_space = self.trig_obj.get_observation_space()
+
+        self.extension_action_limit = extension_action_limit
+        self.rotation_action_limit = rotation_action_limit
+        # Action space definition
+        beta_action = np.full(NUM_TUBES, self.extension_action_limit)
+        alpha_action = np.full(NUM_TUBES, np.deg2rad(self.rotation_action_limit))
+        self.action_space = gym.spaces.Box(low=np.concatenate((-beta_action, -alpha_action)),
+                                           high=np.concatenate((beta_action, alpha_action)),
+                                           dtype="float32")
         self.system = 0
         # Initialization of starting position
         self.starting_position = self.model.forward_kinematics(self.starting_joints, self.system)
@@ -82,7 +90,7 @@ class CtrReachEnv(gym.GoalEnv):
                 self.system = np.where(np.random.multinomial(1, sys_prob) == 1)[0][0]
             else:
                 # Sample uniformly
-                self.system = np.random.randint(len(self.system_parameters.keys()))
+                self.system = np.random.randint(len(self.ctr_system_parameters))
         else:
             self.system = system
         if goal is None:

@@ -1,8 +1,8 @@
 from copy import deepcopy
 
-from model_utils import *
+from ctr_reach_envs.envs.model_utils import *
 from scipy.integrate import solve_ivp
-from CTR_Python import Segment
+from ctr_reach_envs.envs.CTR_Python import Segment
 
 NUM_TUBES = 3
 
