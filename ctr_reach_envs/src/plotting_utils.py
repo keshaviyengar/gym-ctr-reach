@@ -12,8 +12,8 @@ def plot_trajectory(achived_goals, desired_goals, r1, r2, r3, save_path=None):
     fig = plt.figure(figsize=(6, 6), dpi=150)
     ax = plt.axes(projection='3d')
     ax.plot3D(r1[0][:,0] * 1000, r1[0][:,1] * 1000, r1[0][:,2] * 1000, linewidth=2.0, c='#2596BE')
-    ax.plot3D(r2[0][:,0] * 1000, r2[0][:,1] * 1000, r2[0][:,2] * 1000, linewidth=3.0, c='red')
-    ax.plot3D(r3[0][:,0] * 1000, r3[0][:,1] * 1000, r3[0][:,2] * 1000, linewidth=4.0, c='green')
+    ax.plot3D(r2[0][:,0] * 1000, r2[0][:,1] * 1000, r2[0][:,2] * 1000, linewidth=3.0, c='#D62728')
+    ax.plot3D(r3[0][:,0] * 1000, r3[0][:,1] * 1000, r3[0][:,2] * 1000, linewidth=4.0, c='#2Ca02C')
     ag = np.array(achived_goals) * 1000
     dg = np.array(desired_goals) * 1000
     ax.plot3D(ag[:,0], ag[:,1], ag[:,2], marker='.', linestyle=':', label='achieved', c='black')

@@ -87,8 +87,7 @@ register(
         # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
         'initial_joints': np.array([0, 0, 0, 0, 0, 0]),
         'joint_representation': 'egocentric',
-        'resample_joints': False,
-        'render': False,
+        'resample_joints': True,
         'evaluation': False,
         'length_based_sample': False,
         'domain_rand': 0.0

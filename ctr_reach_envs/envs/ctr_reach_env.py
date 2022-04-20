@@ -3,6 +3,7 @@ import numpy as np
 from ctr_reach_envs.envs.obs import Obs
 from ctr_reach_envs.envs.goal_tolerance import GoalTolerance
 from ctr_reach_envs.envs.model import Model
+from ctr_reach_envs.envs.ctr_3d_graph import Ctr3dGraph
 
 from ctr_reach_envs.envs.CTR_Python import Tube
 
@@ -12,7 +13,7 @@ NUM_TUBES = 3
 class CtrReachEnv(gym.GoalEnv):
     def __init__(self, ctr_systems_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
                  initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit, max_steps_per_episode,
-                 n_substeps, evaluation, render, select_systems, resample_joints=True, length_based_sample=False,
+                 n_substeps, evaluation, select_systems, resample_joints=True, length_based_sample=False,
                  domain_rand=0.0):
 
         # Load in all system parameters
@@ -36,13 +37,14 @@ class CtrReachEnv(gym.GoalEnv):
         self.desired_joints = initial_joints
         self.constrain_alpha = constrain_alpha
         self.evaluation = evaluation
-        self.render = render
         self.resample_joints = resample_joints
         self.length_based_sample = length_based_sample
         self.domain_rand = domain_rand
 
         # CTR kinematic model
         self.model = Model(self.ctr_system_parameters)
+
+        self.visualization = None
 
         # Initialization parameters / objects
         self.t = 0
@@ -167,8 +169,18 @@ class CtrReachEnv(gym.GoalEnv):
         d = np.linalg.norm(achieved_goal - desired_goal, axis=-1)
         return -(d > self.goal_tolerance.get_tol()).astype(np.float64)
 
+    def render(self, mode='empty', **kwargs):
+        if mode=='live':
+            if self.visualization is None:
+                self.visualization = Ctr3dGraph()
+            self.visualization.render(self.t, self.trig_obj.obs['achieved_goal'], self.trig_obj.obs['desired_goal'],
+                                      self.model.r1, self.model.r2, self.model.r3)
+
     def close(self):
         """
         Close gym environment.
         """
+        if self.visualization != None:
+            self.visualization.close()
+            self.visualization = None
         raise SystemExit(0)
