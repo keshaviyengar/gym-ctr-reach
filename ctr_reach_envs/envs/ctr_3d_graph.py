@@ -2,6 +2,11 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
+'''
+This class renders the current state of the robot system using matplotlib in 3d. Called by the render function in
+ctr_reach_env.py.
+'''
+
 
 class Ctr3dGraph(object):
     def __init__(self):
@@ -12,13 +17,16 @@ class Ctr3dGraph(object):
         self.ax3d = plt.axes(projection='3d')
 
     def render(self, current_step, achieved_goal, desired_goal, r1, r2 ,r3):
+        # Plot the tubes with different colors
         self.ax3d.plot3D(r1[:, 0] * 1000, r1[:, 1] * 1000, r1[:, 2] * 1000, linewidth=2.0, c='#2596BE')
         self.ax3d.plot3D(r2[:, 0] * 1000, r2[:, 1] * 1000, r2[:, 2] * 1000, linewidth=3.0, c='#D62728')
         self.ax3d.plot3D(r3[:, 0] * 1000, r3[:, 1] * 1000, r3[:, 2] * 1000, linewidth=4.0, c='#2Ca02C')
         ag = np.array(achieved_goal) * 1000
         dg = np.array(desired_goal) * 1000
+        # Plot achieved and desired goal
         self.ax3d.scatter(ag[0], ag[1], ag[2], c='black', linewidth=10.0)
         self.ax3d.scatter(dg[0], dg[1], dg[2], c='magenta', linewidth=10.0)
+        # Set axis limits
         self.ax3d.set_xlabel("X (mm)")
         self.ax3d.set_ylabel("Y (mm)")
         self.ax3d.set_zlabel("Z (mm)")

@@ -18,6 +18,10 @@ class Model(object):
         self.r3 = []
 
     def randomize_parameters(self, randomization):
+        """
+        Randomize tube parameters for each tube. Used for domain randomization.
+        :param randomization: The percentage interval to sample from.
+        """
         for i in range(len(self.current_sys_parameters)):
             self.current_sys_parameters[i][0] = sample_parameters(self.system_parameters[i][0], randomization)
             self.current_sys_parameters[i][1] = sample_parameters(self.system_parameters[i][1], randomization)
@@ -70,11 +74,11 @@ class Model(object):
         Definition of ODE equation to solve overall backbone shape of CTR.
         :param s: Arc-length distance along backbone.
         :param y: y is 3 initial twist + 3 initial angle + 3 initial position + 9 initial rotation matrix
-        :param ux_0:
-        :param uy_0:
-        :param ei:
-        :param gj:
-        :return: dy/dt set of differential equations
+        :param ux_0: Initial curvature in x for segment.
+        :param uy_0: Initial curvature in y for segment.
+        :param ei: Youngs modulus times second moment of inertia
+        :param gj: Shear modulus times polar moment of inertia
+        :return: dydt set of differential equations
         """
         dydt = np.empty([18, 1])
         ux = np.empty([3, 1])

@@ -3,6 +3,7 @@ import seaborn as sns
 from scipy import stats
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+plt.rcParams['font.serif'] = ['Times New Roman']
 
 import numpy as np
 
@@ -37,11 +38,13 @@ def plot_B_box_plots(df, alpha):
 
 if __name__ == '__main__':
     project_folder = '/home/keshav/ctm2-stable-baselines/saved_results/tro_2021/tro_results/rotation_experiments/'
-    #project_folder = '/home/keshav/ctm2-stable-baselines/saved_results/tro_2021/tro_results/old_rotation_experiments/rotation_experiments/'
+    project_folder = '/home/keshav/ctm2-stable-baselines/saved_results/tro_2021/tro_results/old_rotation_experiments/rotation_experiments/'
     #project_folder = '/home/keshav/ctm2-stable-baselines/saved_results/tro_2021/tro_results/generic_policy_experiments/'
     #names = ['free_rotation/tro_free_0', 'free_rotation/tro_free_1', 'free_rotation/tro_free_2', 'free_rotation/tro_free_3']
+    #names = ['constrain_rotation/tro_free_0', 'free_rotation/tro_free_1', 'free_rotation/tro_free_2', 'free_rotation/tro_free_3']
+    names = ['constrain_rotation/icra_constrain_3', 'free_rotation/icra_free_3']
     #names = ['constrain_rotation/tro_constrain_0', 'constrain_rotation/tro_constrain_1', 'constrain_rotation/tro_constrain_2', 'constrain_rotation/tro_constrain_3']
-    names = ['free_rotation/tro_domain_rand_2']
+    #names = ['free_rotation/tro_domain_rand_2']
     system_idx = None
     exp = 0
     if system_idx is not None:
@@ -66,13 +69,13 @@ if __name__ == '__main__':
 
     if plot_polar_error:
         fig = plt.figure(figsize=(5,5), dpi=100)
-        sns.set(font_scale=2.0)
+        sns.set(font_scale=1.0)
         sns.set_style(style='white')
         ax = fig.add_subplot(projection='polar', xlim=(-180,180))
-        ax.scatter(proc_df['alpha_achieved_1'], proc_df['errors_pos'], s=20, c=proc_df['errors_pos'], cmap='cividis',
+        ax.scatter(proc_df['alpha_achieved_3'], proc_df['errors_pos'], s=20, c=proc_df['errors_pos'], cmap='cividis',
                    vmin=0, vmax=35)
-        ax.text(np.deg2rad(80), 25, 'Error (mm)',
-                rotation=90, ha='center', va='center', fontsize=17)
+        ax.text(np.deg2rad(50), 20, 'Error (mm)',
+                rotation=45, ha='center', va='center', fontsize=12, fontdict=None)
         ax.set_thetamin(-180.0)
         ax.set_thetamax(180.0)
         ax.set_rmax(40)

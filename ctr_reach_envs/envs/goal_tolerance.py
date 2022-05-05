@@ -1,5 +1,9 @@
 import numpy as np
 
+'''
+This class implements the Goal Tolerance applied during training. The tolerance reduces through training to make it
+easier initially to achieve goals and more difficult as the agent learns a policy.
+'''
 
 class GoalTolerance(object):
     def __init__(self, goal_tolerance_parameters):

@@ -62,7 +62,7 @@ class CtrReachEnv(gym.GoalEnv):
                                            dtype="float32")
         self.system = 0
         # Initialization of starting position
-        self.starting_position = self.model.forward_kinematics(self.starting_joints, self.system)
+        self.starting_position = self.model.forward_kinematics(np.array(self.starting_joints), self.system)
         self.desired_goal = self.starting_position
         # Goal tolerance parameters
         self.goal_tolerance = GoalTolerance(goal_tolerance_parameters)
@@ -170,6 +170,11 @@ class CtrReachEnv(gym.GoalEnv):
         return -(d > self.goal_tolerance.get_tol()).astype(np.float64)
 
     def render(self, mode='empty', **kwargs):
+        """
+        Render the current shape of the CTR system with achieved goal and desired goal.
+        :param mode: Set the render mode. If not set, no rendering is performed.
+        :param kwargs: Extra arguements if needed.
+        """
         if mode=='live':
             if self.visualization is None:
                 self.visualization = Ctr3dGraph()
@@ -184,3 +189,22 @@ class CtrReachEnv(gym.GoalEnv):
             self.visualization.close()
             self.visualization = None
         raise SystemExit(0)
+
+
+    def print_parameters(self):
+        """
+        Print parameters used for experiment. Called from Callback function in rl-zoo from train.py script.
+        """
+        print("----Observation and q_space----")
+
+        print("----Goal tolerance parameters----")
+
+    def update_goal_tolerance(self, timestep):
+        """
+
+        :param timestep:  The current timestep to update the goal tolerance
+        """
+        self.goal_tolerance.update(timestep)
+
+    def get_goal_tolerance(self):
+        return self.goal_tolerance.get_tol()
