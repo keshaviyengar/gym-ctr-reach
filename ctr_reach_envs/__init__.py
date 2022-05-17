@@ -90,7 +90,8 @@ register(
         'resample_joints': True,
         'evaluation': False,
         'length_based_sample': False,
-        'domain_rand': 0.0
+        'domain_rand': 0.0,
+        'her': True
     },
     max_episode_steps=150
 )

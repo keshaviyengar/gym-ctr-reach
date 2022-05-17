@@ -17,7 +17,7 @@ ZERO_TOL = 1e-4
 
 class Obs(object):
     def __init__(self, system_parameters, goal_tolerance_parameters, noise_parameters, initial_joints,
-                 joint_representation, constrain_alpha=False):
+                 joint_representation, constrain_alpha=False, her=True):
         self.system_parameters = system_parameters
         self.num_systems = len(self.system_parameters)
         # Get tube lengths to set maximum beta value in observation space
@@ -38,6 +38,8 @@ class Obs(object):
         self.tracking_std_noise = np.full(3, noise_parameters['tracking_std'])
 
         self.constrain_alpha = constrain_alpha
+        # Whether to use obs dictionary for use with HER
+        self.her = her
 
         # Variables for joint values and relative joint values
         self.joints = initial_joints
@@ -121,16 +123,19 @@ class Obs(object):
                 (rep_space.low, np.array([del_x_y_min, del_x_y_min, del_z_min, final_tol, 0])))
             obs_space_high = np.concatenate(
                 (rep_space.high, np.array([del_x_y_max, del_x_y_max, del_z_max, initial_tol, self.num_systems - 1])))
-        observation_space = gym.spaces.Dict(dict(
-            desired_goal=gym.spaces.Box(low=np.array([-0.1, -0.1, 0]),
-                                        high=np.array([0.1, 0.1, 0.2]), dtype="float32"),
-            achieved_goal=gym.spaces.Box(low=np.array([-0.1, -0.1, 0]),
-                                         high=np.array([0.1, 0.1, 0.2]), dtype="float32"),
-            observation=gym.spaces.Box(
-                low=obs_space_low,
-                high=obs_space_high,
-                dtype="float32")
-        ))
+        if self.her:
+            observation_space = gym.spaces.Dict(dict(
+                desired_goal=gym.spaces.Box(low=np.array([-0.1, -0.1, 0]),
+                                            high=np.array([0.1, 0.1, 0.2]), dtype="float32"),
+                achieved_goal=gym.spaces.Box(low=np.array([-0.1, -0.1, 0]),
+                                             high=np.array([0.1, 0.1, 0.2]), dtype="float32"),
+                observation=gym.spaces.Box(
+                    low=obs_space_low,
+                    high=obs_space_high,
+                    dtype="float32")
+            ))
+        else:
+            observation_space = gym.spaces.Box(low=obs_space_low, high=obs_space_high)
         return observation_space
 
     def get_obs(self, desired_goal, achieved_goal, goal_tolerance, system):
@@ -155,11 +160,14 @@ class Obs(object):
         else:
             obs = np.concatenate([trig_joints, desired_goal - achieved_goal, np.array([goal_tolerance])])
 
-        self.obs = {
-            'observation': obs.copy(),
-            'achieved_goal': achieved_goal.copy(),
-            'desired_goal': desired_goal.copy()
-        }
+        if self.her:
+            self.obs = {
+                'observation': obs.copy(),
+                'achieved_goal': achieved_goal.copy(),
+                'desired_goal': desired_goal.copy()
+            }
+        else:
+            self.obs = obs
 
         return self.obs
 

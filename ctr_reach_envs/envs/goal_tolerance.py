@@ -8,7 +8,6 @@ easier initially to achieve goals and more difficult as the agent learns a polic
 class GoalTolerance(object):
     def __init__(self, goal_tolerance_parameters):
         self.goal_tolerance_parameters = goal_tolerance_parameters
-        self.inc_tol_obs = self.goal_tolerance_parameters['inc_tol_obs']
         self.init_tol = self.goal_tolerance_parameters['initial_tol']
         self.final_tol = self.goal_tolerance_parameters['final_tol']
         self.N_ts = self.goal_tolerance_parameters['N_ts']

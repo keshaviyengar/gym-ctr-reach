@@ -14,7 +14,7 @@ class CtrReachEnv(gym.GoalEnv):
     def __init__(self, ctr_systems_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
                  initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit, max_steps_per_episode,
                  n_substeps, evaluation, select_systems, resample_joints=True, length_based_sample=False,
-                 domain_rand=0.0):
+                 domain_rand=0.0, her=True):
 
         # Load in all system parameters
         self.ctr_system_parameters = list()
@@ -49,7 +49,7 @@ class CtrReachEnv(gym.GoalEnv):
         # Initialization parameters / objects
         self.t = 0
         self.trig_obj = Obs(self.ctr_system_parameters, goal_tolerance_parameters, noise_parameters, initial_joints,
-                            joint_representation, constrain_alpha)
+                            joint_representation, constrain_alpha, her)
         self.observation_space = self.trig_obj.get_observation_space()
 
         self.extension_action_limit = extension_action_limit
@@ -139,7 +139,6 @@ class CtrReachEnv(gym.GoalEnv):
         reward = self.compute_reward(achieved_goal, self.desired_goal, dict())
         done = (reward == 0) or (self.t >= self.max_steps_per_episode)
         obs = self.trig_obj.get_obs(self.desired_goal, achieved_goal, self.goal_tolerance.get_tol(), self.system)
-
         # If evaluating, save more information for analysis
         if self.evaluation:
             info = {'is_success': (np.linalg.norm(self.desired_goal - achieved_goal) < self.goal_tolerance.get_tol()),
