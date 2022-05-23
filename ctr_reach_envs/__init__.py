@@ -40,20 +40,36 @@ register(
                      }
             },
             # RViM lab tube parameters
+            #'ctr_2': {
+            #    'tube_0':
+            #        {'length': 309e-3, 'length_curved': 145e-3, 'diameter_inner': 0.7e-3, 'diameter_outer': 1.1e-3,
+            #         'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 13.52, 'y_curvature': 0
+            #         },
+            #    'tube_1':
+            #        {'length': 275e-3, 'length_curved': 114e-3, 'diameter_inner': 1.4e-3, 'diameter_outer': 1.8e-3,
+            #        'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 11.68, 'y_curvature': 0
+            #         },
+            #   'tube_2':
+            #       {'length': 173e-3, 'length_curved': 173e-3, 'diameter_inner': 1.83e-3, 'diameter_outer': 2.39e-3,
+            #        'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 10.8, 'y_curvature': 0
+            #        }
+            #},
             'ctr_2': {
                 'tube_0':
-                    {'length': 309e-3, 'length_curved': 145e-3, 'diameter_inner': 0.7e-3, 'diameter_outer': 1.1e-3,
-                     'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 13.52, 'y_curvature': 0
+                    {'length': 304e-3, 'length_curved': 193e-3, 'diameter_inner': 0.49e-3, 'diameter_outer': 1.10e-3,
+                     'stiffness': 75e+10, 'torsional_stiffness': 25e+10, 'x_curvature': 19.5, 'y_curvature': 0
                      },
+
                 'tube_1':
-                    {'length': 275e-3, 'length_curved': 114e-3, 'diameter_inner': 1.4e-3, 'diameter_outer': 1.8e-3,
-                    'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 11.68, 'y_curvature': 0
+                    {'length': 153e-3, 'length_curved': 73e-3, 'diameter_inner': 1.12e-3, 'diameter_outer': 1.34e-3,
+                     'stiffness': 75e+10, 'torsional_stiffness': 25e+10, 'x_curvature': 16.23, 'y_curvature': 0
                      },
-               'tube_2':
-                   {'length': 173e-3, 'length_curved': 173e-3, 'diameter_inner': 1.83e-3, 'diameter_outer': 2.39e-3,
-                    'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 10.8, 'y_curvature': 0
-                    }
-            },
+
+                'tube_2':
+                    {'length': 68e-3, 'length_curved': 68e-3, 'diameter_inner': 1.36e-3, 'diameter_outer': 1.82e-3,
+                     'stiffness': 75e+10, 'torsional_stiffness': 25e+10, 'x_curvature': 14.86, 'y_curvature': 0
+                     }
+            }},
             # Unknown tube parameters or where they are from
             'ctr_3': {
                 'tube_0':
