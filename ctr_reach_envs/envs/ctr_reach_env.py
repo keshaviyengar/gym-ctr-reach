@@ -55,11 +55,11 @@ class CtrReachEnv(gym.GoalEnv):
         self.extension_action_limit = extension_action_limit
         self.rotation_action_limit = rotation_action_limit
         # Action space definition
-        beta_action = np.full(NUM_TUBES, self.extension_action_limit)
-        alpha_action = np.full(NUM_TUBES, np.deg2rad(self.rotation_action_limit))
+        beta_action = np.full(NUM_TUBES, 1)
+        alpha_action = np.full(NUM_TUBES, 1)
         self.action_space = gym.spaces.Box(low=np.concatenate((-beta_action, -alpha_action)),
                                            high=np.concatenate((beta_action, alpha_action)),
-                                           dtype="float32")
+                                           dtype=np.float32)
         self.system = 0
         self.uz_0 = np.zeros(5, dtype=float)
         # Initialization of starting position
