@@ -193,7 +193,6 @@ class CtrReachEnv(gym.GoalEnv):
         if self.visualization != None:
             self.visualization.close()
             self.visualization = None
-        raise SystemExit(0)
 
 
     def print_parameters(self):
