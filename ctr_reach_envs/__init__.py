@@ -75,7 +75,7 @@ register(
         'n_substeps': 10,
         'goal_tolerance_parameters': {
             'inc_tol_obs': False, 'final_tol': 0.001, 'initial_tol': 0.020,
-            'N_ts': 200000, 'function': 'constant', 'set_tol': 0
+            'N_ts': 200000, 'function': 'decay', 'set_tol': 0
         },
         'noise_parameters': {
             # 0.001 is the gear ratio
@@ -91,7 +91,8 @@ register(
         'evaluation': False,
         'length_based_sample': False,
         'domain_rand': 0.0,
-        'her': True
+        'her': False,
+        'sparse_reward': False
     },
     max_episode_steps=150
 )

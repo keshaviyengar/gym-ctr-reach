@@ -14,7 +14,7 @@ class CtrReachEnv(gym.GoalEnv):
     def __init__(self, ctr_systems_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
                  initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit, max_steps_per_episode,
                  n_substeps, evaluation, select_systems, resample_joints=True, length_based_sample=False,
-                 domain_rand=0.0, her=True):
+                 domain_rand=0.0, her=False, sparse_reward=False):
 
         # Load in all system parameters
         self.ctr_system_parameters = list()
@@ -68,6 +68,7 @@ class CtrReachEnv(gym.GoalEnv):
         self.desired_goal = self.starting_position
         # Goal tolerance parameters
         self.goal_tolerance = GoalTolerance(goal_tolerance_parameters)
+        self.sparse_reward = sparse_reward
 
     def reset(self, goal=None, system=None):
         """
@@ -151,7 +152,8 @@ class CtrReachEnv(gym.GoalEnv):
         self.t += 1
         reward_info = {"alphas": alphas}
         reward = self.compute_reward(achieved_goal, self.desired_goal, reward_info)
-        done = (reward == 0) or (self.t >= self.max_steps_per_episode)
+        done = (np.linalg.norm(achieved_goal - self.desired_goal) <= self.goal_tolerance.get_tol()) \
+               or (self.t >= self.max_steps_per_episode)
         obs = self.trig_obj.get_obs(self.desired_goal, achieved_goal, self.goal_tolerance.get_tol(), self.system)
         # If evaluating, save more information for analysis
         if self.evaluation:
@@ -182,7 +184,11 @@ class CtrReachEnv(gym.GoalEnv):
         """
         assert achieved_goal.shape == desired_goal.shape
         d = np.linalg.norm(achieved_goal - desired_goal, axis=-1)
-        return -(d > self.goal_tolerance.get_tol()).astype(np.float64)
+        if self.sparse_reward:
+            return -(d > self.goal_tolerance.get_tol()).astype(np.float64)
+        else:
+            return -(d).astype(np.float64)
+
 
     def render(self, mode='empty', **kwargs):
         """
@@ -203,7 +209,6 @@ class CtrReachEnv(gym.GoalEnv):
         if self.visualization != None:
             self.visualization.close()
             self.visualization = None
-        raise SystemExit(0)
 
     def print_parameters(self):
         """
