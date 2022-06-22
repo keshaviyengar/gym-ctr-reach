@@ -3,6 +3,7 @@ from copy import deepcopy
 from ctr_reach_envs.envs.model_utils import *
 from scipy.integrate import solve_ivp
 from ctr_reach_envs.envs.CTR_Python import Segment
+from ctr_reach_envs.envs.CTR_Python.CTR_Model import CTR_Model
 
 NUM_TUBES = 3
 
@@ -27,7 +28,35 @@ class Model(object):
             self.current_sys_parameters[i][1] = sample_parameters(self.system_parameters[i][1], randomization)
             self.current_sys_parameters[i][2] = sample_parameters(self.system_parameters[i][2], randomization)
 
-    def forward_kinematics(self, joint, system, **kwargs):
+    def fk(self, q, q_0, u_init, system):
+        # TODO: q_0 is starting q value
+        old_fk = True
+        if old_fk:
+            return self.forward_kinematics(q, q_0, system)
+        else:
+            f = np.array([0, 0, 0]).reshape(3, 1)
+            tube1 = self.current_sys_parameters[system][0]
+            tube2 = self.current_sys_parameters[system][1]
+            tube3 = self.current_sys_parameters[system][2]
+            print("q: " + str(q))
+            print("q_0: " + str(q_0))
+            CTR = CTR_Model(tube1, tube2, tube3, f, q, q_0, 0.01, 1)
+            J = CTR.jac(u_init)  # estimate jacobian matrix
+
+            # Use this command if you wish to use boundary value problem (bvp) solver (very accurate but slower)
+            u_init = CTR.minimize(u_init)
+
+            # finding twist curvature at the tip of the tubes
+            d_tip = np.array([CTR.tube1.L, CTR.tube2.L, CTR.tube3.L]) + CTR.beta
+            index = np.array([0, 0, 0])
+            for i in range(1, 3):
+                index[i-1] = np.argmin(abs(CTR.Length - d_tip[i]))
+            self.r1 = CTR.r[index[0]:index[1] + 1]
+            self.r2 = CTR.r[index[1]:index[2] + 1]
+            self.r3 = CTR.r[:index[2] + 1]
+        return CTR.r[-1], u_init
+
+    def forward_kinematics(self, joint, q_0, system, **kwargs):
         """
         q_0 = np.array([0, 0, 0, 0, 0, 0])
         # initial twist (for ivp solver)
@@ -62,12 +91,12 @@ class Model(object):
 
         # initial twist
         uz_0_ = np.array([0, 0, 0])
-        self.r, U_z, tip = self.ctr_model(system, uz_0_, alpha_0_, r_0_, R_0_, segment, beta)
+        self.r, U_z, tip, Alpha = self.ctr_model(system, uz_0_, alpha_0_, r_0_, R_0_, segment, beta)
         self.r1 = self.r[tip[1]:tip[0] + 1]
         self.r2 = self.r[tip[2]:tip[1] + 1]
         self.r3 = self.r[:tip[2] + 1]
         assert not np.any(np.isnan(self.r))
-        return self.r[-1]
+        return self.r[-1], U_z, Alpha
 
     def ode_eq(self, s, y, ux_0, uy_0, ei, gj):
         """
@@ -104,7 +133,7 @@ class Model(object):
         e3 = np.array([0, 0, 1]).reshape(3, 1)
         uz = y[0:3]
         R = np.array(y[9:]).reshape(3, 3)
-        u_hat = np.array([(0, - uz[0], uy[0]), (uz[0], 0, -ux[0]), (-uy[0], ux[0], 0)])
+        u_hat = np.array([(0, - uz[0], uy[0]), (uz[0], 0, -ux[0]), (-uy[0], ux[0], 0)], dtype="object")
         dr = np.dot(R, e3)
         dR = np.dot(R, u_hat).ravel()
 
@@ -171,4 +200,4 @@ class Model(object):
             u_z_end[k] = u_z[b, k]
             tip_pos[k] = b
 
-        return r, u_z_end, tip_pos
+        return r, u_z_end, tip_pos, alpha

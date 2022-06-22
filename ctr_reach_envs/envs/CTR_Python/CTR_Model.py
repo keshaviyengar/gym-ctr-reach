@@ -241,8 +241,9 @@ class CTR_Model:
         u_init_perturb = u_init
         cost = self.ode_solver(u_init)
         for i in range(0, 6):
+            print(u_init_perturb)
             u_init_perturb[i] = u_init_perturb[i] + self.eps
-            cost_perturb = (self.ode_solver(u_init_perturb, 1) - cost) / self.eps
+            cost_perturb = (self.ode_solver(u_init_perturb) - cost) / self.eps
             jac_bvp[:, i] = cost_perturb.reshape(5, )
             u_init_perturb[i] = u_init_perturb[i]
         return jac_bvp
@@ -315,7 +316,7 @@ class CTR_Model:
                      -self.segment.EI[2, 0] * self.segment.U_x[2, 0] * np.sin(- self.alpha_0[2, 0]) +
                      self.segment.EI[2, 0] *
                      self.segment.U_y[2, 0] * np.cos(-self.alpha_0[2, 0]))
-        cost = self.ode_solver(u_init, 1)
+        cost = self.ode_solver(u_init)
         d_cost = np.zeros(5, )
         Kp = np.diag(np.array([0.1, 0.05, 0.05, 0.05, 0.05]))
         Kd = np.diag(np.array([0.001, 0.001, 0.001, 0.001, 0.001]))

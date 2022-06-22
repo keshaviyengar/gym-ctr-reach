@@ -12,11 +12,12 @@ def random_rollout(spec, kwargs):
     env = FlattenDictWrapper(spec.make(**kwargs), ['observation', 'desired_goal', 'achieved_goal'])
     agent = lambda ob: env.action_space.sample()
     ob = env.reset()
-    for _ in range(10):
+    for i in range(10):
         assert env.observation_space.contains(ob)
         a = agent(ob)
         assert env.action_space.contains(a)
         (ob, _reward, done, _info) = env.step(a)
+        env.render(mode="live")
         if done:
             break
     env.close()
@@ -52,6 +53,7 @@ def plot_points(points):
 if __name__ == '__main__':
     spec = gym.spec('CTR-Reach-v0')
     kwargs = {"resample_joints": True}
-    sampled_positions = random_reset(spec, 1000, kwargs)
+    #sampled_positions = random_reset(spec, 1000, kwargs)
+    sampled_positions = random_rollout(spec,kwargs)
     plot_points(sampled_positions)
 

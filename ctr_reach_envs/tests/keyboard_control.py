@@ -6,6 +6,12 @@ import numpy as np
 import ctr_reach_envs
 
 
+def convert_angle_to_0_2pi_interval(angle):
+    new_angle = np.arctan2(np.sin(angle), np.cos(angle))
+    if new_angle < 0:
+        new_angle = abs(new_angle) + 2 * (np.pi - abs(new_angle))
+    return new_angle
+
 class KeyboardControl(object):
     def __init__(self, env):
         self.env = env
@@ -63,11 +69,17 @@ class KeyboardControl(object):
 
     def run(self):
         obs = self.env.reset()
+        print("alpha_0, alpha_L")
         while not self.exit:
             self.action[:3] = self.extension_actions
             self.action[3:] = self.rotation_actions
             # print('action: ', self.action)
             observation, reward, done, info = self.env.step(self.action)
+            alpha_0 = info["alpha_0"][0]
+            alpha_0_wrap = convert_angle_to_0_2pi_interval(alpha_0)
+            alpha_L = info["alpha_L"][0]
+            alpha_L_wrap = convert_angle_to_0_2pi_interval(alpha_L)
+            print(str(alpha_0_wrap) + ', ' + str(alpha_L_wrap))
             self.extension_actions = np.zeros(3)
             self.rotation_actions = np.zeros(3)
             self.action = np.zeros_like(self.env.action_space.low)
@@ -77,7 +89,7 @@ class KeyboardControl(object):
 
 if __name__ == '__main__':
     spec = gym.spec('CTR-Reach-v0')
-    kwargs = {}
+    kwargs = {'evaluation': False}
     env = spec.make(**kwargs)
     keyboard_agent = KeyboardControl(env)
     keyboard_agent.run()

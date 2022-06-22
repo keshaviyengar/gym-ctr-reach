@@ -61,8 +61,10 @@ class CtrReachEnv(gym.GoalEnv):
                                            high=np.concatenate((beta_action, alpha_action)),
                                            dtype="float32")
         self.system = 0
+        self.uz_0 = np.zeros(5, dtype=float)
         # Initialization of starting position
-        self.starting_position = self.model.forward_kinematics(np.array(self.starting_joints), self.system)
+        #self.starting_position = self.model.forward_kinematics(np.array(self.starting_joints), self.system)
+        self.starting_position = self.model.fk(np.array(self.starting_joints), np.zeros(NUM_TUBES*2, dtype=float), self.uz_0, self.system)
         self.desired_goal = self.starting_position
         # Goal tolerance parameters
         self.goal_tolerance = GoalTolerance(goal_tolerance_parameters)
@@ -76,6 +78,7 @@ class CtrReachEnv(gym.GoalEnv):
         """
         # Reset timesteps
         self.t = 0
+        self.uz_0 = np.zeros(5, dtype=float)
         # Domain randomization for domain transfer. Set self.domain_rand to zero if not used
         self.model.randomize_parameters(self.domain_rand)
         # Set system to None if training and want to sample systems at each episode
@@ -98,20 +101,28 @@ class CtrReachEnv(gym.GoalEnv):
         if goal is None:
             # No goal given so sample a desired goal in the robot workspace
             self.desired_joints = self.trig_obj.sample_goal(self.system)
-            self.desired_goal = self.model.forward_kinematics(self.desired_joints, self.system)
+            self.desired_goal, _, _ = self.model.fk(self.desired_joints,
+                                              np.zeros(NUM_TUBES * 2, dtype=float),
+                                              np.zeros(5, dtype=float), self.system)
+            # self.desired_goal = self.model.forward_kinematics(self.desired_joints, self.system)
         else:
             self.desired_goal = goal
         if self.resample_joints:
             # Should the initial position of the robot be re-sampled at the start of each episode
             self.starting_joints = self.trig_obj.sample_goal(self.system)
             self.trig_obj.joints = self.starting_joints
-            self.starting_position = self.model.forward_kinematics(self.trig_obj.joints, self.system)
+            self.starting_position, self.uz_0, _ = self.model.fk(self.trig_obj.joints, np.zeros(NUM_TUBES * 2, dtype=float),
+                                                   np.zeros(5, dtype=float), self.system)
+            #self.starting_position = self.model.forward_kinematics(self.trig_obj.joints, self.system)
         else:
             # Start from the final position of last episode
             self.starting_joints = self.trig_obj.joints
-            self.starting_position = self.model.forward_kinematics(self.starting_joints, self.system)
+            self.starting_position, self.uz_0, _ = self.model.fk(self.starting_joints, np.zeros(NUM_TUBES * 2, dtype=float),
+                                                   np.zeros(5, dtype=float), self.system)
+            #self.starting_position = self.model.forward_kinematics(self.starting_joints, self.system)
 
-        return self.trig_obj.get_obs(self.desired_goal, self.starting_position, self.goal_tolerance.get_tol(), self.system)
+        return self.trig_obj.get_obs(self.desired_goal, self.starting_position, self.goal_tolerance.get_tol(),
+                                     self.system)
 
     def seed(self, seed=None):
         """
@@ -134,9 +145,12 @@ class CtrReachEnv(gym.GoalEnv):
         for _ in range(self.n_substeps):
             self.trig_obj.set_action(action, self.system)
         # Compute achieved goal with forward kinematics
-        achieved_goal = self.model.forward_kinematics(self.trig_obj.joints, self.system)
+        #achieved_goal = self.model.forward_kinematics(self.trig_obj.joints, self.system)
+        achieved_goal, self.uz_0, alphas = self.model.fk(self.trig_obj.joints, self.starting_joints, self.uz_0, self.system)
+        #achieved_goal = self.model.forward_kinematics(self.trig_obj.joints, self.system)
         self.t += 1
-        reward = self.compute_reward(achieved_goal, self.desired_goal, dict())
+        reward_info = {"alphas": alphas}
+        reward = self.compute_reward(achieved_goal, self.desired_goal, reward_info)
         done = (reward == 0) or (self.t >= self.max_steps_per_episode)
         obs = self.trig_obj.get_obs(self.desired_goal, achieved_goal, self.goal_tolerance.get_tol(), self.system)
         # If evaluating, save more information for analysis
@@ -149,10 +163,12 @@ class CtrReachEnv(gym.GoalEnv):
                     'orientation_tolerance': 0,
                     'achieved_goal': achieved_goal,
                     'desired_goal': self.desired_goal, 'starting_position': self.starting_position,
-                    'q_desired': self.desired_joints, 'q_achieved': self.trig_obj.joints, 'q_starting': self.starting_joints}
+                    'q_desired': self.desired_joints, 'q_achieved': self.trig_obj.joints,
+                    'q_starting': self.starting_joints}
         else:
             info = {'is_success': (np.linalg.norm(self.desired_goal - achieved_goal) < self.goal_tolerance.get_tol()),
-                    'error': np.linalg.norm(self.desired_goal - achieved_goal)}
+                    'error': np.linalg.norm(self.desired_goal - achieved_goal),
+                    'alpha_L': alphas[-1], 'alpha_0': alphas[0]}
 
         return obs, reward, done, info
 
@@ -174,7 +190,7 @@ class CtrReachEnv(gym.GoalEnv):
         :param mode: Set the render mode. If not set, no rendering is performed.
         :param kwargs: Extra arguements if needed.
         """
-        if mode=='live':
+        if mode == 'live':
             if self.visualization is None:
                 self.visualization = Ctr3dGraph()
             self.visualization.render(self.t, self.trig_obj.obs['achieved_goal'], self.trig_obj.obs['desired_goal'],
@@ -188,7 +204,6 @@ class CtrReachEnv(gym.GoalEnv):
             self.visualization.close()
             self.visualization = None
         raise SystemExit(0)
-
 
     def print_parameters(self):
         """
