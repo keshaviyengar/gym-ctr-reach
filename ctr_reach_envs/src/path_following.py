@@ -27,8 +27,8 @@ if __name__ == '__main__':
     path_type = 'line'
 
     noisy_env = False
-    plot_traj = False
-    animate = True
+    plot_traj = True
+    animate = False
 
     model_path = project_folder + name + gen_model_path
     output_path = project_folder + name
@@ -58,7 +58,8 @@ if __name__ == '__main__':
 
     # Get trajectory points
     if path_type == 'line':
-        x_points, y_points, z_points = line_traj(20, -0.1, 0.05, 0.20, 0.1, 0.05, 0.20)
+        #x_points, y_points, z_points = line_traj(20, -0.1, 0.05, 0.20, 0.1, 0.05, 0.20)
+        x_points, y_points, z_points = line_traj(20, 62.0e-3, 10.0e-3, 118.0e-3, 66.0e-3, 0.0, 118.0e-3)
         # x_points, y_points, z_points = line_traj(20, 0.0, 0.10, 0.20, 0.10, 0.10, 0.20)
         # x_points, y_points, z_points = line_traj(20, -0.025, 0.0, 0.15, 0.025, 0.0, 0.15)
     if path_type == 'helix':

@@ -57,7 +57,7 @@ def run_episode(env, model, goal=None, system_idx=None):
             print("Tip Error: " + str(infos.get('errors_pos')*1000))
             print("Achieved joint: " + str(np.rad2deg(infos.get('q_achieved'))))
             break
-    return achieved_goals, desired_goals, r1, r2, r3
+    return achieved_goals, desired_goals, infos.get('q_achieved'), r1, r2, r3
 
 def trajectory_controller(model, env, x_traj, y_traj, z_traj, system_idx, select_systems):
     achieved_goals = list()
@@ -72,7 +72,7 @@ def trajectory_controller(model, env, x_traj, y_traj, z_traj, system_idx, select
                            'goal': goal})
     else:
         obs = env.reset(**{'goal': goal})
-    for _ in range(20):
+    for _ in range(150):
         action, _ = model.predict(obs, deterministic=True)
         action = np.clip(action, env.action_space.low, env.action_space.high)
         obs, reward, done, infos = env.step(action)
@@ -81,6 +81,8 @@ def trajectory_controller(model, env, x_traj, y_traj, z_traj, system_idx, select
         if done or infos.get('is_success', False):
             break
 
+    print("Initial error: " + str(np.linalg.norm(obs_dict['achieved_goal'] - obs_dict['desired_goal'])))
+    print("Initial extension joints: " + str(env.env.trig_obj.joints[:3]) + " rotations: " + str(env.env.trig_obj.joints[3:] % np.pi))
     achieved_goals.append(obs_dict['achieved_goal'])
     desired_goals.append(obs_dict['desired_goal'])
     r1.append(env.env.model.r1)

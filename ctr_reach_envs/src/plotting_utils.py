@@ -3,7 +3,7 @@ from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.markers import MarkerStyle
-from utils import decay_goal_tolerance
+from ctr_reach_envs.src.utils import decay_goal_tolerance
 plt.rcParams['font.serif'] = ['Times New Roman']
 plt.rcParams['font.size'] = 10
 
@@ -73,12 +73,20 @@ def plot_path_only(achieved_goals, desired_goals, save_path=None):
     ax.set_xlabel("X (mm)")
     ax.set_ylabel("Y (mm)")
     ax.set_zlabel("Z (mm)")
-    #ax.set_xlim3d([30, 90])
-    #ax.set_xticks([30, 50, 70, 90])
-    #ax.set_ylim3d([30, 90])
-    #ax.set_yticks([30, 50, 70, 90])
-    #ax.set_zlim3d([170, 260])
-    #ax.set_zticks([170, 200, 230, 270])
+    x_max = np.max(np.concatenate((ag[:, 0], dg[:, 0])))
+    y_max = np.max(np.concatenate((ag[:, 1], dg[:, 1])))
+    z_max = np.max(np.concatenate((ag[:, 2], dg[:, 2])))
+    x_min = np.min(np.concatenate((ag[:, 0], dg[:, 0])))
+    y_min = np.min(np.concatenate((ag[:, 1], dg[:, 1])))
+    z_min = np.min(np.concatenate((ag[:, 2], dg[:, 2])))
+    max_range = np.array([x_max - x_min, y_max - y_min, z_max - z_min]).max() / 2.0
+
+    mid_x = (x_max + x_min) * 0.5
+    mid_y = (y_max + y_min) * 0.5
+    mid_z = (z_max + z_min) * 0.5
+    ax.set_xlim(mid_x - max_range, mid_x + max_range)
+    ax.set_ylim(mid_y - max_range, mid_y + max_range)
+    ax.set_zlim(mid_z - max_range, mid_z + max_range)
     ax.set_box_aspect([1,1,1])
     if save_path is None:
         plt.show()
