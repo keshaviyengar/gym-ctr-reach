@@ -1,5 +1,5 @@
 import gym
-import ctr_generic_envs
+import ctr_reach_envs
 
 import numpy as np
 import pandas as pd
@@ -9,7 +9,8 @@ from stable_baselines.her.utils import HERGoalEnvWrapper
 
 from stable_baselines.bench.monitor import Monitor
 
-from trajectory_plotter import load_agent, plot_trajectory
+from utils import load_agent
+from plotting_utils import plot_trajectory
 
 
 # Aim of this script is to run through a number of episodes, returns the error statistics. This script is used for generic
@@ -23,6 +24,7 @@ def evaluation(env, model, num_episodes, output_path, select_systems):
 
     # Iterate through all systems that have been generalized
     obs = env.reset()
+    select_systems = [3]
     for system_idx in select_systems:
         goal_errors = np.empty((num_episodes), dtype=float)
         episode_lengths = np.empty((num_episodes), dtype=float)
@@ -43,7 +45,7 @@ def evaluation(env, model, num_episodes, output_path, select_systems):
             # Run random episodes and save sequence of actions and states to plot in matlab
             episode_reward = 0
             ep_len = 0
-            obs = env.reset(**{'system_idx' : np.where(system_idx == np.array(select_systems))[0][0]})
+            obs = env.reset(**{'system' : np.where(system_idx == np.array(select_systems))[0][0]})
             # Set system idx if not None
             while True:
                 action, _ = model.predict(obs, deterministic=True)
@@ -93,19 +95,18 @@ if __name__ == '__main__':
     gen_model_path = "/her/CTR-Generic-Reach-v0_1/CTR-Generic-Reach-v0.zip"
 
     project_folder = '/home/keshav/ctm2-stable-baselines/saved_results/tro_2021/tro_results/generic_policy_experiments/'
-    name = 'three_systems/tro_three_systems_2'
-    #name = 'four_systems/tro_four_systems_prop'
-    selected_systems = [0,2,3]
+    #name = 'three_systems/tro_three_systems_2'
+    name = 'four_systems/tro_four_systems_0'
+    selected_systems = [0,1,2,3]
 
     model_path = project_folder + name + gen_model_path
-    output_path = project_folder + name
+    output_path = '/home/keshav/ctm2-stable-baselines/saved_results/tmrb_2022/discrete_generalization/' + name
 
     num_episodes = 1000
 
     # Env and model names and paths
-    env_id = "CTR-Generic-Reach-v0"
-    env_kwargs = {'evaluation': True, 'relative_q': True, 'resample_joints': False, 'constrain_alpha': False,
-                  'num_systems': len(selected_systems), 'select_systems': selected_systems,
+    env_id = "CTR-Reach-v0"
+    env_kwargs = {'evaluation': True, 'resample_joints': False, 'select_systems': selected_systems,
                   'goal_tolerance_parameters': {'inc_tol_obs': True, 'initial_tol': 0.020, 'final_tol': 0.001,
                                                 'N_ts': 200000, 'function': 'constant', 'set_tol': 0.001}
                   }

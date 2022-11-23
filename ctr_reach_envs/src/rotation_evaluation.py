@@ -1,5 +1,5 @@
 import gym
-import ctr_generic_envs
+import ctr_reach_envs
 
 import numpy as np
 import pandas as pd
@@ -9,7 +9,8 @@ from stable_baselines.her.utils import HERGoalEnvWrapper
 
 from stable_baselines.bench.monitor import Monitor
 
-from trajectory_plotter import load_agent, plot_trajectory
+from utils import load_agent
+from plotting_utils import plot_trajectory
 
 
 # Aim of this script is to run through a number of episodes, returns the error statistics
@@ -86,22 +87,22 @@ if __name__ == '__main__':
     #gen_model_path = "/her/CTR-Generic-Reach-v0_1/CTR-Generic-Reach-v0.zip"
 
     project_folder = '/home/keshav/ctm2-stable-baselines/saved_results/tro_2021/tro_results/rotation_experiments/'
-    system_idx = 2
+    system_idx = 3
+    eval_system_idx = 3
     constrain = False
     domain_rand = 0.0
-    #name = 'free_rotation/tro_free_' + str(system_idx)
-    name = 'free_rotation/tro_domain_rand_' + str(system_idx)
-    #name = 'free_rotation/tro_free_' + str(system_idx)
+    name = 'free_rotation/tro_free_' + str(system_idx)
+    #name = 'free_rotation/tro_domain_rand_' + str(system_idx)
 
     model_path = project_folder + name + gen_model_path
-    output_path = project_folder + name + "/evaluations.csv"
+    output_path = '/home/keshav/ctm2-stable-baselines/saved_results/tmrb_2022/single_system_evaluations/' + \
+                  name + "/evaluations_" + str(eval_system_idx) + ".csv"
 
-    num_episodes = 1000
+    num_episodes = 100
 
     # Env and model names and paths
-    env_id = "CTR-Generic-Reach-v0"
-    env_kwargs = {'evaluation': True, 'relative_q': True, 'resample_joints': True, 'constrain_alpha': constrain,
-                  'num_systems': 1, 'select_systems': [system_idx], 'domain_rand': domain_rand,
+    env_id = "CTR-Reach-v0"
+    env_kwargs = {'evaluation': True, 'resample_joints': True, 'select_systems': [eval_system_idx], 'domain_rand': domain_rand,
                   'goal_tolerance_parameters': {'inc_tol_obs': True, 'initial_tol': 0.020, 'final_tol': 0.001,
                                                 'N_ts': 200000, 'function': 'constant', 'set_tol': 0.001}
                   }
