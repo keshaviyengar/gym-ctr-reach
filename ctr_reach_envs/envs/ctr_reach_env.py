@@ -13,7 +13,7 @@ NUM_TUBES = 3
 class CtrReachEnv(gym.GoalEnv):
     def __init__(self, ctr_systems_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
                  initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit, max_steps_per_episode,
-                 n_substeps, evaluation, select_systems, resample_joints=True, length_based_sample=False,
+                 n_substeps, evaluation, select_systems, max_betas=None, resample_joints=True, length_based_sample=False,
                  domain_rand=0.0):
 
         # Load in all system parameters
@@ -49,7 +49,7 @@ class CtrReachEnv(gym.GoalEnv):
         # Initialization parameters / objects
         self.t = 0
         self.trig_obj = Obs(self.ctr_system_parameters, goal_tolerance_parameters, noise_parameters, initial_joints,
-                            joint_representation, constrain_alpha)
+                            joint_representation, max_betas, constrain_alpha)
         self.observation_space = self.trig_obj.get_observation_space()
 
         self.extension_action_limit = extension_action_limit

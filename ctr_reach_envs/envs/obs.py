@@ -17,11 +17,15 @@ ZERO_TOL = 1e-4
 
 class Obs(object):
     def __init__(self, system_parameters, goal_tolerance_parameters, noise_parameters, initial_joints,
-                 joint_representation, constrain_alpha=False):
+                 joint_representation, max_betas=None, constrain_alpha=False):
         self.system_parameters = system_parameters
         self.num_systems = len(self.system_parameters)
         # Get tube lengths to set maximum beta value in observation space
         self.tube_lengths = list()
+        if max_betas is None:
+            self.max_betas = np.array([0.0, 0.0, 0.0])
+        else:
+            self.max_betas = np.array(max_betas)
         for sys_param in self.system_parameters:
             tube_length = list()
             for tube in sys_param:
@@ -55,22 +59,22 @@ class Obs(object):
         """
         joint_spaces = list()
         joint_sample_spaces = list()
-        for tube_betas in self.tube_lengths:
+        for tube_betas, max_beta in zip(self.tube_lengths, self.max_betas):
             joint_sample_spaces.append(gym.spaces.Box(low=np.concatenate((-np.array(tube_betas) + EXT_TOL,
                                                                           np.full(NUM_TUBES, -np.pi))),
-                                                      high=np.concatenate((np.full(NUM_TUBES, 0),
+                                                      high=np.concatenate((np.full(NUM_TUBES, max_beta),
                                                                            np.full(NUM_TUBES, np.pi)))
                                                       ))
             if self.constrain_alpha:
                 joint_spaces.append(gym.spaces.Box(low=np.concatenate((-np.array(tube_betas) + EXT_TOL,
                                                                        np.full(NUM_TUBES, -np.pi))),
-                                                   high=np.concatenate((np.full(NUM_TUBES, 0),
+                                                   high=np.concatenate((np.full(NUM_TUBES, max_beta),
                                                                         np.full(NUM_TUBES, np.pi)))
                                                    ))
             else:
                 joint_spaces.append(gym.spaces.Box(low=np.concatenate((-np.array(tube_betas) + EXT_TOL,
                                                                        np.full(NUM_TUBES, -np.inf))),
-                                                   high=np.concatenate((np.full(NUM_TUBES, 0),
+                                                   high=np.concatenate((np.full(NUM_TUBES, max_beta),
                                                                         np.full(NUM_TUBES, np.inf)))
                                                    ))
         return joint_spaces, joint_sample_spaces
