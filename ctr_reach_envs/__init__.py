@@ -112,3 +112,49 @@ register(
     },
     max_episode_steps=150
 )
+
+register(
+    id='CTR-Reach-Hardware-v0', entry_point='ctr_reach_envs.envs:CtrReachHardwareEnv',
+    kwargs={
+        'ctr_systems_parameters': {
+            # RViM lab tube parameters
+            'ctr_0': {
+                'tube_0':
+                    {'length': 0.1365, 'length_curved': 0.094, 'diameter_inner': 0.00049, 'diameter_outer': 0.00110,
+                     'stiffness': 75.0e9, 'torsional_stiffness': 25.0e9, 'x_curvature': 19.5, 'y_curvature': 0.0,
+                     },
+                'tube_1':
+                    {'length': 0.077, 'length_curved': 0.073, 'diameter_inner': 0.00112, 'diameter_outer': 0.00134,
+                     'stiffness': 75.0e9, 'torsional_stiffness': 25.0e9, 'x_curvature': 16.23, 'y_curvature': 0.0,
+                     },
+                'tube_2':
+                    {'length': 0.0475, 'length_curved': 0.0475, 'diameter_inner': 0.00136, 'diameter_outer': 0.00182,
+                     'stiffness': 75.0e9, 'torsional_stiffness': 25.0e9, 'x_curvature': 14.86, 'y_curvature': 0.0,
+                     }
+            },
+        },
+        'extension_action_limit': 0.001,
+        'rotation_action_limit': 5,
+        'max_steps_per_episode': 150,
+        'n_substeps': 10,
+        'goal_tolerance_parameters': {
+            'inc_tol_obs': False, 'final_tol': 0.001, 'initial_tol': 0.020,
+            'N_ts': 200000, 'function': 'constant', 'set_tol': 0
+        },
+        'noise_parameters': {
+            # 0.001 is the gear ratio
+            # 0.001 is also the tracking std deviation for now for testing.
+            'rotation_std': np.deg2rad(0), 'extension_std': 0.001 * np.deg2rad(0), 'tracking_std': 0.0
+        },
+        'select_systems': [0],
+        'constrain_alpha': False,
+        # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
+        'initial_joints': np.array([0, 0, 0, 0, 0, 0]),
+        'joint_representation': 'egocentric',
+        'resample_joints': False,
+        'evaluation': False,
+        'length_based_sample': False,
+        'domain_rand': 0.0
+    },
+    max_episode_steps=150
+)
