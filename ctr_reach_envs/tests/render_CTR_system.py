@@ -24,7 +24,7 @@ def plot_ctr_systems(select_systems):
     :param select_systems: The selected systems to render.
     """
     env_kwargs = {'select_systems': select_systems}
-    ctr_env =  HERGoalEnvWrapper(gym.make(env_id, **env_kwargs)).env.env
+    ctr_env = HERGoalEnvWrapper(gym.make(env_id, **env_kwargs)).env.env
     ctr_systems = ctr_env.ctr_system_parameters
     ctr_kine_model = Model(ctr_systems)
 
@@ -32,10 +32,16 @@ def plot_ctr_systems(select_systems):
     ax = plt.axes()
 
     # List of joints to visualize in workspace plot
-    joint_list = [np.array([0,0,0,np.pi/2,np.pi/2,np.pi/2]),
-              np.array([0, 0, 0, -np.pi / 2, np.pi / 2, np.pi / 2]),
-              np.array([0, 0, 0, np.pi / 2, -np.pi / 2, np.pi / 2]),
-              np.array([0, 0, 0, -np.pi / 2, -np.pi / 2, np.pi / 2])]
+    ext = ctr_env.trig_obj.joint_spaces[0].high[:3]
+    joint_list = [np.concatenate((ext, np.array([ np.pi / 2,  np.pi / 2, np.pi / 2]))),
+                  np.concatenate((ext, np.array([-np.pi / 2,  np.pi / 2, np.pi / 2]))),
+                  np.concatenate((ext, np.array([ np.pi / 2, -np.pi / 2, np.pi / 2]))),
+                  np.concatenate((ext, np.array([-np.pi / 2, -np.pi / 2, np.pi / 2]))),
+                  ]
+    #joint_list = [np.array([0, 0, 0,  np.pi / 2,  np.pi / 2, np.pi / 2]),
+    #              np.array([0, 0, 0, -np.pi / 2,  np.pi / 2, np.pi / 2]),
+    #              np.array([0, 0, 0,  np.pi / 2, -np.pi / 2, np.pi / 2]),
+    #              np.array([0, 0, 0, -np.pi / 2, -np.pi / 2, np.pi / 2])]
     # For each system, for each joint in the joint list, compute forward kinematics, get the backbone shape and plot
     for system in range(0, len(ctr_systems)):
         labelled = False
@@ -62,6 +68,6 @@ def plot_ctr_systems(select_systems):
 
 
 if __name__ == '__main__':
-    select_systems = [0,1,2,3]
+    select_systems = [3]
     plot_ctr_systems(select_systems)
 

@@ -59,24 +59,29 @@ class Obs(object):
         """
         joint_spaces = list()
         joint_sample_spaces = list()
-        for tube_betas, max_beta in zip(self.tube_lengths, self.max_betas):
+        # TODO: This implementation is incorrect, per system not per tube
+        for tube_betas in self.tube_lengths:
             joint_sample_spaces.append(gym.spaces.Box(low=np.concatenate((-np.array(tube_betas) + EXT_TOL,
                                                                           np.full(NUM_TUBES, -np.pi))),
-                                                      high=np.concatenate((np.full(NUM_TUBES, max_beta),
+                                                      high=np.concatenate((np.full(NUM_TUBES, 0.0),
                                                                            np.full(NUM_TUBES, np.pi)))
                                                       ))
             if self.constrain_alpha:
                 joint_spaces.append(gym.spaces.Box(low=np.concatenate((-np.array(tube_betas) + EXT_TOL,
                                                                        np.full(NUM_TUBES, -np.pi))),
-                                                   high=np.concatenate((np.full(NUM_TUBES, max_beta),
+                                                   high=np.concatenate((np.full(NUM_TUBES, 0),
                                                                         np.full(NUM_TUBES, np.pi)))
                                                    ))
             else:
                 joint_spaces.append(gym.spaces.Box(low=np.concatenate((-np.array(tube_betas) + EXT_TOL,
                                                                        np.full(NUM_TUBES, -np.inf))),
-                                                   high=np.concatenate((np.full(NUM_TUBES, max_beta),
+                                                   high=np.concatenate((np.full(NUM_TUBES, 0),
                                                                         np.full(NUM_TUBES, np.inf)))
                                                    ))
+        # Apply max_betas, TODO: Generalize if want to apply to more than one system
+        joint_spaces[0].high[:3] = self.max_betas
+        joint_sample_spaces[0].high[:3] = self.max_betas
+
         return joint_spaces, joint_sample_spaces
 
     def get_rep_space(self):

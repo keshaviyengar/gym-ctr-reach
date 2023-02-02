@@ -148,6 +148,7 @@ register(
         },
         'select_systems': [0],
         'constrain_alpha': False,
+        'max_betas': np.array([-0.09642, 0, 0]),
         # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
         'initial_joints': np.array([0, 0, 0, 0, 0, 0]),
         'joint_representation': 'egocentric',
