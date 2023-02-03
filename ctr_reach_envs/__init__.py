@@ -57,34 +57,37 @@ register(
             # New hardware parameters, check stiffness and diameters
             'ctr_3': {
                 'tube_0':
-                    {'length': 153.95e-3 + 96.41e-3 + 90.3e-3, 'length_curved': 90.3e-3, 'diameter_inner': 0.508e-3,
+                    {'length': 104.7e-3, 'length_curved': 104.7e-3, 'diameter_inner': 0.508e-3,
                      'diameter_outer': 0.66e-3, 'stiffness': 7.5e+10, 'torsional_stiffness': 2.5e+10,
                      'x_curvature': 1 / 40.63 * 1e3, 'y_curvature': 0},
 
                 'tube_1':
-                    {'length': 82.19e-3 + 87.5e-3, 'length_curved': 87.5e-3, 'diameter_inner': 0.7e-3,
+                    {'length': 50.0e-3, 'length_curved': 50.0e-3, 'diameter_inner': 0.7e-3,
                      'diameter_outer': 1.0e-3, 'stiffness': 7.5e+10, 'torsional_stiffness': 2.5e+10,
                      'x_curvature': 1 / 52.3 * 1e3, 'y_curvature': 0},
 
                 'tube_2':
-                    {'length': 11.72e-3 + 61.03e-3, 'length_curved': 61.03e-3, 'diameter_inner': 1.15e-3,
+                    {'length': 22.0e-3, 'length_curved': 22.0e-3, 'diameter_inner': 1.15e-3,
                      'diameter_outer': 1.63e-3, 'stiffness': 7.5e+12, 'torsional_stiffness': 2.5e+12,
                      'x_curvature': 1 / 71.23 * 1e3, 'y_curvature': 0}
             },
             # unknown tube parameters or where they are from
-            # 'ctr_3': {
+            #'ctr_3': {
             #    'tube_0':
-            #        {'length': 150e-3, 'length_curved': 100e-3, 'diameter_inner': 1.0e-3, 'diameter_outer': 2.4e-3,
-            #         'stiffness': 5e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 15.82, 'y_curvature': 0},
+            #        {'length': 153.95e-3 + 96.41e-3 + 90.3e-3, 'length_curved': 90.3e-3, 'diameter_inner': 0.508e-3,
+            #         'diameter_outer': 0.66e-3, 'stiffness': 7.5e+10, 'torsional_stiffness': 2.5e+10,
+            #         'x_curvature': 1 / 40.63 * 1e3, 'y_curvature': 0},
 
             #    'tube_1':
-            #        {'length': 100e-3, 'length_curved': 21.6e-3, 'diameter_inner': 3.0e-3, 'diameter_outer': 3.8e-3,
-            #         'stiffness': 5e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 11.8, 'y_curvature': 0},
+            #        {'length': 82.19e-3 + 87.5e-3, 'length_curved': 87.5e-3, 'diameter_inner': 0.7e-3,
+            #         'diameter_outer': 1.0e-3, 'stiffness': 7.5e+10, 'torsional_stiffness': 2.5e+10,
+            #         'x_curvature': 1 / 52.3 * 1e3, 'y_curvature': 0},
 
             #    'tube_2':
-            #        {'length': 70e-3, 'length_curved': 8.8e-3, 'diameter_inner': 4.4e-3, 'diameter_outer': 5.4e-3,
-            #         'stiffness': 5.0e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 20.04, 'y_curvature': 0}
-            # },
+            #        {'length': 11.72e-3 + 61.03e-3, 'length_curved': 61.03e-3, 'diameter_inner': 1.15e-3,
+            #         'diameter_outer': 1.63e-3, 'stiffness': 7.5e+12, 'torsional_stiffness': 2.5e+12,
+            #         'x_curvature': 1 / 71.23 * 1e3, 'y_curvature': 0}
+            #},
         },
         'extension_action_limit': 0.001,
         'rotation_action_limit': 5,
@@ -101,7 +104,7 @@ register(
         },
         'select_systems': [0],
         'constrain_alpha': False,
-        'max_betas': np.array([-0.09642, 0, 0]),
+        'max_betas': np.array([0, 0, 0]),
         # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
         'initial_joints': np.array([0, 0, 0, 0, 0, 0]),
         'joint_representation': 'egocentric',
