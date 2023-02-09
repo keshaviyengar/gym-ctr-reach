@@ -57,17 +57,17 @@ register(
             # New hardware parameters, check stiffness and diameters
             'ctr_3': {
                 'tube_0':
-                    {'length': 104.7e-3, 'length_curved': 104.7e-3, 'diameter_inner': 0.508e-3,
+                    {'length': 3.0 * 96.41e-3 + 153.95e-3 + 90.3e-3, 'length_curved': 90e-3, 'diameter_inner': 0.508e-3,
                      'diameter_outer': 0.66e-3, 'stiffness': 7.5e+10, 'torsional_stiffness': 2.5e+10,
                      'x_curvature': 1 / 40.63 * 1e3, 'y_curvature': 0},
 
                 'tube_1':
-                    {'length': 50.0e-3, 'length_curved': 50.0e-3, 'diameter_inner': 0.7e-3,
+                    {'length': 82.19e-3 + 87.5e-3, 'length_curved': 87.5e-3, 'diameter_inner': 0.7e-3,
                      'diameter_outer': 1.0e-3, 'stiffness': 7.5e+10, 'torsional_stiffness': 2.5e+10,
                      'x_curvature': 1 / 52.3 * 1e3, 'y_curvature': 0},
 
                 'tube_2':
-                    {'length': 22.0e-3, 'length_curved': 22.0e-3, 'diameter_inner': 1.15e-3,
+                    {'length': 11.72e-3 + 61.03e-3, 'length_curved': 61.03e-3, 'diameter_inner': 1.15e-3,
                      'diameter_outer': 1.63e-3, 'stiffness': 7.5e+12, 'torsional_stiffness': 2.5e+12,
                      'x_curvature': 1 / 71.23 * 1e3, 'y_curvature': 0}
             },
@@ -104,7 +104,9 @@ register(
         },
         'select_systems': [0],
         'constrain_alpha': False,
-        'max_betas': np.array([0, 0, 0]),
+        'home_offset': np.array([-235.96e-3 - 2.0 * 96.41e-3, -119.69e-3, -50.75e-3]),
+        'max_retraction': np.array([-97.0e-3, -50e-3, -22.0e-3]),
+        'max_rotation': np.pi / 3,
         # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
         'initial_joints': np.array([0, 0, 0, 0, 0, 0]),
         'joint_representation': 'egocentric',
@@ -151,7 +153,6 @@ register(
         },
         'select_systems': [0],
         'constrain_alpha': False,
-        'max_betas': np.array([-0.09642, 0, 0]),
         # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
         'initial_joints': np.array([0, 0, 0, 0, 0, 0]),
         'joint_representation': 'egocentric',

@@ -17,20 +17,28 @@ ZERO_TOL = 1e-4
 
 class Obs(object):
     def __init__(self, system_parameters, goal_tolerance_parameters, noise_parameters, initial_joints,
-                 joint_representation, max_betas=None, constrain_alpha=False):
+                 joint_representation, home_offset=None, max_retraction=None, max_rotation=None, constrain_alpha=False):
         self.system_parameters = system_parameters
         self.num_systems = len(self.system_parameters)
         # Get tube lengths to set maximum beta value in observation space
         self.tube_lengths = list()
-        if max_betas is None:
-            self.max_betas = np.array([0.0, 0.0, 0.0])
+        if home_offset is None:
+            self.home_offset = np.array([0.0, 0.0, 0.0])
         else:
-            self.max_betas = np.array(max_betas)
+            self.home_offset = np.array(home_offset)
         for sys_param in self.system_parameters:
             tube_length = list()
             for tube in sys_param:
                 tube_length.append(tube.L)
             self.tube_lengths.append(tube_length)
+        if max_retraction is None:
+            self.max_retraction = -self.tube_lengths[0]
+        else:
+            self.max_retraction = self.home_offset + max_retraction
+        if max_rotation is None:
+            self.max_rotation = np.inf
+        else:
+            self.max_rotation = max_rotation
 
         # Goal tolerance parameters
         self.goal_tolerance = GoalTolerance(goal_tolerance_parameters)
@@ -59,18 +67,21 @@ class Obs(object):
         """
         joint_spaces = list()
         joint_sample_spaces = list()
-        # TODO: This implementation is incorrect, per system not per tube
         for tube_betas in self.tube_lengths:
+            if self.max_rotation == np.inf:
+                sample_rotation = np.pi
+            else:
+                sample_rotation = self.max_rotation
             joint_sample_spaces.append(gym.spaces.Box(low=np.concatenate((-np.array(tube_betas) + EXT_TOL,
-                                                                          np.full(NUM_TUBES, -np.pi))),
+                                                                          np.full(NUM_TUBES, -sample_rotation))),
                                                       high=np.concatenate((np.full(NUM_TUBES, 0.0),
-                                                                           np.full(NUM_TUBES, np.pi)))
+                                                                           np.full(NUM_TUBES, sample_rotation)))
                                                       ))
             if self.constrain_alpha:
                 joint_spaces.append(gym.spaces.Box(low=np.concatenate((-np.array(tube_betas) + EXT_TOL,
-                                                                       np.full(NUM_TUBES, -np.pi))),
+                                                                       np.full(NUM_TUBES, -sample_rotation))),
                                                    high=np.concatenate((np.full(NUM_TUBES, 0),
-                                                                        np.full(NUM_TUBES, np.pi)))
+                                                                        np.full(NUM_TUBES, sample_rotation)))
                                                    ))
             else:
                 joint_spaces.append(gym.spaces.Box(low=np.concatenate((-np.array(tube_betas) + EXT_TOL,
@@ -78,9 +89,12 @@ class Obs(object):
                                                    high=np.concatenate((np.full(NUM_TUBES, 0),
                                                                         np.full(NUM_TUBES, np.inf)))
                                                    ))
-        # Apply max_betas, TODO: Generalize if want to apply to more than one system
-        joint_spaces[0].high[:3] = self.max_betas
-        joint_sample_spaces[0].high[:3] = self.max_betas
+        # Apply home offsets, TODO: Generalize if want to apply to more than one system
+        joint_spaces[0].high[:3] = self.home_offset
+        joint_sample_spaces[0].high[:3] = self.home_offset
+        # Apply max retraction to low
+        joint_spaces[0].low[:3] = self.max_retraction
+        joint_sample_spaces[0].low[:3] = self.max_retraction
 
         return joint_spaces, joint_sample_spaces
 

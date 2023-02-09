@@ -13,8 +13,8 @@ NUM_TUBES = 3
 class CtrReachEnv(gym.GoalEnv):
     def __init__(self, ctr_systems_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
                  initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit, max_steps_per_episode,
-                 n_substeps, evaluation, select_systems, max_betas=None, resample_joints=True, length_based_sample=False,
-                 domain_rand=0.0):
+                 n_substeps, evaluation, select_systems, home_offset, max_retraction, max_rotation, resample_joints=True,
+                 length_based_sample=False, domain_rand=0.0):
 
         # Load in all system parameters
         self.ctr_system_parameters = list()
@@ -41,6 +41,10 @@ class CtrReachEnv(gym.GoalEnv):
         self.length_based_sample = length_based_sample
         self.domain_rand = domain_rand
 
+        # Home offset for hardware tubes being very long for carriages. To account for twisting that occurs.
+        self.home_offset = home_offset
+        self.max_retraction = max_retraction
+
         # CTR kinematic model
         self.model = Model(self.ctr_system_parameters)
 
@@ -49,7 +53,7 @@ class CtrReachEnv(gym.GoalEnv):
         # Initialization parameters / objects
         self.t = 0
         self.trig_obj = Obs(self.ctr_system_parameters, goal_tolerance_parameters, noise_parameters, initial_joints,
-                            joint_representation, max_betas, constrain_alpha)
+                            joint_representation, home_offset, max_retraction, max_rotation, constrain_alpha)
         self.observation_space = self.trig_obj.get_observation_space()
 
         self.extension_action_limit = extension_action_limit
