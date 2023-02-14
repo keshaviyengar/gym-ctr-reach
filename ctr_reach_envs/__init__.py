@@ -94,9 +94,13 @@ register(
         'max_steps_per_episode': 150,
         'n_substeps': 10,
         'goal_tolerance_parameters': {
-            'inc_tol_obs': False, 'final_tol': 0.001, 'initial_tol': 0.020,
-            'N_ts': 200000, 'function': 'constant', 'set_tol': 0
+            'inc_tol_obs': False, 'final_tol': 0.01, 'initial_tol': 0.2,
+            'N_ts': 200000, 'function': 'constant', 'set_tol': 0, 'measure': 'percentage'
         },
+        #'goal_tolerance_parameters': {
+        #    'inc_tol_obs': False, 'final_tol': 0.001, 'initial_tol': 0.020,
+        #    'N_ts': 200000, 'function': 'constant', 'set_tol': 0, 'measure': 'mm'
+        #},
         'noise_parameters': {
             # 0.001 is the gear ratio
             # 0.001 is also the tracking std deviation for now for testing.
@@ -125,17 +129,19 @@ register(
             # RViM lab tube parameters
             'ctr_0': {
                 'tube_0':
-                    {'length': 0.1365, 'length_curved': 0.094, 'diameter_inner': 0.00049, 'diameter_outer': 0.00110,
-                     'stiffness': 75.0e9, 'torsional_stiffness': 25.0e9, 'x_curvature': 19.5, 'y_curvature': 0.0,
-                     },
+                    {'length': 3.0 * 96.41e-3 + 153.95e-3 + 90.3e-3, 'length_curved': 90e-3, 'diameter_inner': 0.508e-3,
+                     'diameter_outer': 0.66e-3, 'stiffness': 7.5e+10, 'torsional_stiffness': 2.5e+10,
+                     'x_curvature': 1 / 40.63 * 1e3, 'y_curvature': 0},
+
                 'tube_1':
-                    {'length': 0.077, 'length_curved': 0.073, 'diameter_inner': 0.00112, 'diameter_outer': 0.00134,
-                     'stiffness': 75.0e9, 'torsional_stiffness': 25.0e9, 'x_curvature': 16.23, 'y_curvature': 0.0,
-                     },
+                    {'length': 82.19e-3 + 87.5e-3, 'length_curved': 87.5e-3, 'diameter_inner': 0.7e-3,
+                     'diameter_outer': 1.0e-3, 'stiffness': 7.5e+10, 'torsional_stiffness': 2.5e+10,
+                     'x_curvature': 1 / 52.3 * 1e3, 'y_curvature': 0},
+
                 'tube_2':
-                    {'length': 0.0475, 'length_curved': 0.0475, 'diameter_inner': 0.00136, 'diameter_outer': 0.00182,
-                     'stiffness': 75.0e9, 'torsional_stiffness': 25.0e9, 'x_curvature': 14.86, 'y_curvature': 0.0,
-                     }
+                    {'length': 11.72e-3 + 61.03e-3, 'length_curved': 61.03e-3, 'diameter_inner': 1.15e-3,
+                     'diameter_outer': 1.63e-3, 'stiffness': 7.5e+12, 'torsional_stiffness': 2.5e+12,
+                     'x_curvature': 1 / 71.23 * 1e3, 'y_curvature': 0}
             },
         },
         'extension_action_limit': 0.001,
@@ -153,8 +159,11 @@ register(
         },
         'select_systems': [0],
         'constrain_alpha': False,
+        'home_offset': np.array([-235.96e-3 - 2.0 * 96.41e-3, -119.69e-3, -50.75e-3]),
+        'max_retraction': np.array([-97.0e-3, -50e-3, -22.0e-3]),
+        'max_rotation': np.pi / 3,
         # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
-        'initial_joints': np.array([0, 0, 0, 0, 0, 0]),
+        'initial_joints': np.array([-97.0e3, -50e-3, -22.0e-3, 0, 0, 0]),
         'joint_representation': 'egocentric',
         'resample_joints': False,
         'evaluation': False,

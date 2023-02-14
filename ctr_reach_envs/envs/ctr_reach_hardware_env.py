@@ -12,8 +12,8 @@ NUM_TUBES = 3
 class CtrReachHardwareEnv(gym.GoalEnv):
     def __init__(self, ctr_systems_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
                  initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit,
-                 max_steps_per_episode, n_substeps, evaluation, select_systems, max_betas=None, resample_joints=True,
-                 length_based_sample=False, domain_rand=0.0):
+                 max_steps_per_episode, n_substeps, evaluation, select_systems, home_offset, max_retraction, max_rotation,
+                 resample_joints=True, length_based_sample=False, domain_rand=0.0):
         # ROS initialization and bridge setup
         self.ros_client = roslibpy.Ros(host='localhost', port=9090)
         self.ros_client.on_ready(lambda: print('Is ROS connected status: ', self.ros_client.is_connected))
@@ -32,18 +32,23 @@ class CtrReachHardwareEnv(gym.GoalEnv):
         self.env = CtrReachEnv(ctr_systems_parameters, goal_tolerance_parameters, noise_parameters,
                                joint_representation, initial_joints, constrain_alpha, extension_action_limit,
                                rotation_action_limit, max_steps_per_episode, n_substeps, evaluation, select_systems,
-                               max_betas, resample_joints, length_based_sample, domain_rand)
+                               home_offset, max_retraction, max_rotation, resample_joints, length_based_sample, domain_rand)
         self.observation_space = self.env.observation_space
         self.action_space = self.env.action_space
         self.achieved_goal = None
         self.desired_goal = None
         self.marker_pose = None
 
-    def reset(self, goal=None):
+    def reset(self, goal=None, joints=None):
         # Reset timesteps
         self.achieved_goal = self.marker_pose[:3]
-        obs = self.env.reset(goal)
-        dg_msg = roslibpy.Message({'header': roslibpy.Header(frame_id='/base_link', stamp=roslibpy.Time.now(), seq=1),
+        if goal is not None:
+            obs = self.env.reset(goal=goal)
+        else:
+            obs = self.env.reset()
+        if joints is not None:
+            self.env.trig_obj.joints = joints
+        dg_msg = roslibpy.Message({'header': roslibpy.Header(frame_id='/entry_point', stamp=roslibpy.Time.now(), seq=1),
                                    'point': {'x': self.env.desired_goal[0], 'y': self.env.desired_goal[1],
                                              'z': self.env.desired_goal[2]}})
         if self.ros_client.is_connected:
@@ -58,11 +63,15 @@ class CtrReachHardwareEnv(gym.GoalEnv):
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
         joints = self.env.trig_obj.joints.copy()
+        joints = np.clip(joints, self.env.trig_obj.joint_spaces[0].low,
+                         self.env.trig_obj.joint_spaces[0].high)
+        joints[:3] = joints[:3] * 1000.0
+        joints[3:] = np.rad2deg(joints[3:])
         self.joint_command_pub.publish(
             roslibpy.Message({'header': roslibpy.Header(frame_id='', stamp=roslibpy.Time.now(), seq=1),
                               'position': list(joints)}))
 
-        dg_msg = roslibpy.Message({'header': roslibpy.Header(frame_id='/base_link', stamp=roslibpy.Time.now(), seq=1),
+        dg_msg = roslibpy.Message({'header': roslibpy.Header(frame_id='/entry_point', stamp=roslibpy.Time.now(), seq=1),
                                    'point': {'x': self.env.desired_goal[0], 'y': self.env.desired_goal[1],
                                              'z': self.env.desired_goal[2]}})
         if self.ros_client.is_connected:
@@ -74,7 +83,12 @@ class CtrReachHardwareEnv(gym.GoalEnv):
         reward = self.compute_reward(self.achieved_goal, self.env.desired_goal, dict())
         done = (reward == 0) or (self.env.t >= self.env.max_steps_per_episode)
         obs['achieved_goal'] = self.achieved_goal
-        info = {}
+        d = np.linalg.norm(self.achieved_goal - self.env.desired_goal, axis=-1)
+        info['error'] = d
+        info['joints'] = joints
+        info['achieved_goal'] = self.achieved_goal
+        info['desired_goal'] = self.env.desired_goal
+
         return obs, reward, done, info
 
     def compute_reward(self, achieved_goal, desired_goal, info):
@@ -118,10 +132,10 @@ def load_agent(env_id, env_kwargs, model_path, seed=None):
 
 
 if __name__ == '__main__':
-    model_path = '/home/keshav/catkin_ws/src/ctr/ctr_policy_ros/example_model/new_tube_params/her/' \
-                 'CTR-Reach-v0_1/best_model.zip'
-    env_kwargs = {
-        'goal_tolerance_parameters': {
+    model_path = '/home/keshav/catkin_ws/src/ctr/ctr_policy_ros/example_model/tro_constrain_3/her/' \
+                 'CTR-Reach-v0_1/rl_model_3000000_steps.zip'
+    env_kwargs = {'resample_joints': False, 'initial_joints': np.array([-97.0e-3, -50.0e-3, -22.0e-3]),
+                  'goal_tolerance_parameters': {
             'inc_tol_obs': True, 'final_tol': 0.001, 'initial_tol': 0.020,
             'N_ts': 200000, 'function': 'constant', 'set_tol': 0.001
         }
@@ -133,7 +147,6 @@ if __name__ == '__main__':
     for i in range(20):
         action, _ = model.predict(obs, deterministic=True)
         obs, reward, done, info = env.step(action)
-        print('action: ' + str(action))
         print('step: ' + str(i) + ' error: ' + str(info['error'] * 1000))
         time.sleep(0.1)
         if done:

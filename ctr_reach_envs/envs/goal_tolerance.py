@@ -13,6 +13,7 @@ class GoalTolerance(object):
         self.final_tol = self.goal_tolerance_parameters['final_tol']
         self.N_ts = self.goal_tolerance_parameters['N_ts']
         self.function = self.goal_tolerance_parameters['function']
+        self.measure = self.goal_tolerance_parameters['measure']
         valid_functions = ['constant', 'linear', 'decay']
         assert self.function in valid_functions, 'Not a valid function. Choose constant, linear or decay.'
 

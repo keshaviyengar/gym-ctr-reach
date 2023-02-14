@@ -13,7 +13,8 @@ NUM_TUBES = 3
 class CtrReachEnv(gym.GoalEnv):
     def __init__(self, ctr_systems_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
                  initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit, max_steps_per_episode,
-                 n_substeps, evaluation, select_systems, home_offset, max_retraction, max_rotation, resample_joints=True,
+                 n_substeps, evaluation, select_systems, home_offset, max_retraction, max_rotation,
+                 resample_joints=True,
                  length_based_sample=False, domain_rand=0.0):
 
         # Load in all system parameters
@@ -115,7 +116,8 @@ class CtrReachEnv(gym.GoalEnv):
             self.starting_joints = self.trig_obj.joints
             self.starting_position = self.model.forward_kinematics(self.starting_joints, self.system)
 
-        return self.trig_obj.get_obs(self.desired_goal, self.starting_position, self.goal_tolerance.get_tol(), self.system)
+        return self.trig_obj.get_obs(self.desired_goal, self.starting_position, self.goal_tolerance.get_tol(),
+                                     self.system)
 
     def seed(self, seed=None):
         """
@@ -140,7 +142,8 @@ class CtrReachEnv(gym.GoalEnv):
         # Compute achieved goal with forward kinematics
         achieved_goal = self.model.forward_kinematics(self.trig_obj.joints, self.system)
         self.t += 1
-        reward = self.compute_reward(achieved_goal, self.desired_goal, dict())
+        reward = self.compute_reward(achieved_goal, self.desired_goal,
+                                     {'robot_length': self.ctr_system_parameters[0][0].L + self.trig_obj.joints[0]})
         done = (reward == 0) or (self.t >= self.max_steps_per_episode)
         obs = self.trig_obj.get_obs(self.desired_goal, achieved_goal, self.goal_tolerance.get_tol(), self.system)
 
@@ -154,7 +157,8 @@ class CtrReachEnv(gym.GoalEnv):
                     'orientation_tolerance': 0,
                     'achieved_goal': achieved_goal,
                     'desired_goal': self.desired_goal, 'starting_position': self.starting_position,
-                    'q_desired': self.desired_joints, 'q_achieved': self.trig_obj.joints, 'q_starting': self.starting_joints}
+                    'q_desired': self.desired_joints, 'q_achieved': self.trig_obj.joints,
+                    'q_starting': self.starting_joints}
         else:
             info = {'is_success': (np.linalg.norm(self.desired_goal - achieved_goal) < self.goal_tolerance.get_tol()),
                     'error': np.linalg.norm(self.desired_goal - achieved_goal)}
@@ -170,8 +174,13 @@ class CtrReachEnv(gym.GoalEnv):
         :return: -1 or 0 based on current tolerance.
         """
         assert achieved_goal.shape == desired_goal.shape
-        d = np.linalg.norm(achieved_goal - desired_goal, axis=-1)
-        return -(d > self.goal_tolerance.get_tol()).astype(np.float64)
+        if self.goal_tolerance.measure == 'percentage':
+            d = np.linalg.norm(achieved_goal - desired_goal, axis=-1) / info['robot_length']
+            return -(d > self.goal_tolerance.get_tol()).astype(np.float64)
+
+        else:
+            d = np.linalg.norm(achieved_goal - desired_goal, axis=-1)
+            return -(d > self.goal_tolerance.get_tol()).astype(np.float64)
 
     def render(self, mode='empty', **kwargs):
         """
@@ -179,7 +188,7 @@ class CtrReachEnv(gym.GoalEnv):
         :param mode: Set the render mode. If not set, no rendering is performed.
         :param kwargs: Extra arguements if needed.
         """
-        if mode=='live':
+        if mode == 'live':
             if self.visualization is None:
                 self.visualization = Ctr3dGraph()
             self.visualization.render(self.t, self.trig_obj.obs['achieved_goal'], self.trig_obj.obs['desired_goal'],
@@ -193,7 +202,6 @@ class CtrReachEnv(gym.GoalEnv):
             self.visualization.close()
             self.visualization = None
         raise SystemExit(0)
-
 
     def print_parameters(self):
         """
