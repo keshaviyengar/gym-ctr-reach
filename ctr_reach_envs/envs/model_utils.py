@@ -9,9 +9,9 @@ def sample_parameters(tube_parameters, randomization):
     :param randomization: The percentage interval to sample from.
     :return: Sampled parameters based on randomization.
     """
-    # Do not randomize length and curved length as causes issues with extension constraints
+    # Do not randomize length as causes issues with extension constraints
     L = randomize_value(tube_parameters.L, 0)
-    L_c = randomize_value(tube_parameters.L_c, 0)
+    L_c = randomize_value(tube_parameters.L_c, randomization)
     diameter_inner = randomize_value(tube_parameters.diameter_inner, randomization)
     diameter_outer = randomize_value(tube_parameters.diameter_outer, randomization)
     stiffness = randomize_value(tube_parameters.E, randomization)

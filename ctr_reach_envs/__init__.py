@@ -95,7 +95,7 @@ register(
         'n_substeps': 10,
         'goal_tolerance_parameters': {
             'inc_tol_obs': False, 'final_tol': 0.01, 'initial_tol': 0.2,
-            'N_ts': 200000, 'function': 'constant', 'set_tol': 0, 'measure': 'percentage'
+            'N_ts': 200000, 'function': 'constant', 'set_tol': 0, 'measure': 'mm'
         },
         #'goal_tolerance_parameters': {
         #    'inc_tol_obs': False, 'final_tol': 0.001, 'initial_tol': 0.020,
