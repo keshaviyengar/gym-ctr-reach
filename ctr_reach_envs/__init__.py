@@ -6,54 +6,54 @@ register(
     kwargs={
         'ctr_systems_parameters': {
             # Autonomous steering by Mohsen Khadem
-            'ctr_0': {
-                'tube_0':
-                    {'length': 431e-3, 'length_curved': 103e-3, 'diameter_inner': 0.7e-3, 'diameter_outer': 1.10e-3,
-                     'stiffness': 10.25e+10, 'torsional_stiffness': 18.79e+10, 'x_curvature': 21.3, 'y_curvature': 0
-                     },
+            #'ctr_0': {
+            #    'tube_0':
+            #        {'length': 431e-3, 'length_curved': 103e-3, 'diameter_inner': 0.7e-3, 'diameter_outer': 1.10e-3,
+            #         'stiffness': 10.25e+10, 'torsional_stiffness': 18.79e+10, 'x_curvature': 21.3, 'y_curvature': 0
+            #         },
 
-                'tube_1':
-                    {'length': 332e-3, 'length_curved': 113e-3, 'diameter_inner': 1.4e-3, 'diameter_outer': 1.8e-3,
-                     'stiffness': 68.6e+10, 'torsional_stiffness': 11.53e+10, 'x_curvature': 13.1, 'y_curvature': 0
-                     },
+            #    'tube_1':
+            #        {'length': 332e-3, 'length_curved': 113e-3, 'diameter_inner': 1.4e-3, 'diameter_outer': 1.8e-3,
+            #         'stiffness': 68.6e+10, 'torsional_stiffness': 11.53e+10, 'x_curvature': 13.1, 'y_curvature': 0
+            #         },
 
-                'tube_2':
-                    {'length': 174e-3, 'length_curved': 134e-3, 'diameter_inner': 2e-3, 'diameter_outer': 2.4e-3,
-                     'stiffness': 16.96e+10, 'torsional_stiffness': 14.25e+10, 'x_curvature': 3.5, 'y_curvature': 0
-                     }
-            },
-            # Learning the FK and IK of a 6-DOF CTR by Grassmann
-            'ctr_1': {
-                'tube_0':
-                    {'length': 370e-3, 'length_curved': 45e-3, 'diameter_inner': 0.3e-3, 'diameter_outer': 0.4e-3,
-                     'stiffness': 50e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 15.8, 'y_curvature': 0,
-                     },
+            #    'tube_2':
+            #        {'length': 174e-3, 'length_curved': 134e-3, 'diameter_inner': 2e-3, 'diameter_outer': 2.4e-3,
+            #         'stiffness': 16.96e+10, 'torsional_stiffness': 14.25e+10, 'x_curvature': 3.5, 'y_curvature': 0
+            #         }
+            #},
+            ## Learning the FK and IK of a 6-DOF CTR by Grassmann
+            #'ctr_1': {
+            #    'tube_0':
+            #        {'length': 370e-3, 'length_curved': 45e-3, 'diameter_inner': 0.3e-3, 'diameter_outer': 0.4e-3,
+            #         'stiffness': 50e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 15.8, 'y_curvature': 0,
+            #         },
 
-                'tube_1':
-                    {'length': 305e-3, 'length_curved': 100e-3, 'diameter_inner': 0.7e-3, 'diameter_outer': 0.9e-3,
-                     'stiffness': 50e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 9.27, 'y_curvature': 0,
-                     },
+            #    'tube_1':
+            #        {'length': 305e-3, 'length_curved': 100e-3, 'diameter_inner': 0.7e-3, 'diameter_outer': 0.9e-3,
+            #         'stiffness': 50e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 9.27, 'y_curvature': 0,
+            #         },
 
-                'tube_2':
-                    {'length': 170e-3, 'length_curved': 100e-3, 'diameter_inner': 1.2e-3, 'diameter_outer': 1.5e-3,
-                     'stiffness': 50e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 4.37, 'y_curvature': 0,
-                     }
-            },
-            # RViM lab tube parameters
-            'ctr_2': {
-                'tube_0':
-                    {'length': 0.1365, 'length_curved': 0.094, 'diameter_inner': 0.00049, 'diameter_outer': 0.00110,
-                     'stiffness': 75.0e9, 'torsional_stiffness': 25.0e9, 'x_curvature': 19.5, 'y_curvature': 0.0,
-                     },
-                'tube_1':
-                    {'length': 275e-3, 'length_curved': 114e-3, 'diameter_inner': 1.4e-3, 'diameter_outer': 1.8e-3,
-                     'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 11.68, 'y_curvature': 0
-                     },
-                'tube_2':
-                    {'length': 173e-3, 'length_curved': 173e-3, 'diameter_inner': 1.83e-3, 'diameter_outer': 2.39e-3,
-                     'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 10.8, 'y_curvature': 0
-                     }
-            },
+            #    'tube_2':
+            #        {'length': 170e-3, 'length_curved': 100e-3, 'diameter_inner': 1.2e-3, 'diameter_outer': 1.5e-3,
+            #         'stiffness': 50e+10, 'torsional_stiffness': 2.3e+10, 'x_curvature': 4.37, 'y_curvature': 0,
+            #         }
+            #},
+            ## RViM lab tube parameters
+            #'ctr_2': {
+            #    'tube_0':
+            #        {'length': 0.1365, 'length_curved': 0.094, 'diameter_inner': 0.00049, 'diameter_outer': 0.00110,
+            #         'stiffness': 75.0e9, 'torsional_stiffness': 25.0e9, 'x_curvature': 19.5, 'y_curvature': 0.0,
+            #         },
+            #    'tube_1':
+            #        {'length': 275e-3, 'length_curved': 114e-3, 'diameter_inner': 1.4e-3, 'diameter_outer': 1.8e-3,
+            #         'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 11.68, 'y_curvature': 0
+            #         },
+            #    'tube_2':
+            #        {'length': 173e-3, 'length_curved': 173e-3, 'diameter_inner': 1.83e-3, 'diameter_outer': 2.39e-3,
+            #         'stiffness': 75e+9, 'torsional_stiffness': 25e+9, 'x_curvature': 10.8, 'y_curvature': 0
+            #         }
+            #},
             # New hardware parameters, check stiffness and diameters
             'ctr_3': {
                 'tube_0':
@@ -163,7 +163,7 @@ register(
         'max_retraction': np.array([-97.0e-3, -50e-3, -22.0e-3]),
         'max_rotation': np.pi / 3,
         # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
-        'initial_joints': np.array([-97.0e3, -50e-3, -22.0e-3, 0, 0, 0]),
+        'initial_joints': np.array([-235.96e-3 - 2.0 * 96.41e-3, -119.69e-3, -50.75e-3, 0.0, 0.0, 0.0]),
         'joint_representation': 'egocentric',
         'resample_joints': False,
         'evaluation': False,

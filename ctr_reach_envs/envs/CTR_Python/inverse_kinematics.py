@@ -9,28 +9,34 @@ import time
 from ctr_reach_envs.src.plotting_utils import animate_trajectory, plot_trajectory, plot_path_only, plot_intermediate
 from ctr_reach_envs.src.paths import velocity_based_line_traj
 
+from ctr_reach_envs.envs.model import Model
+
 
 class JacobianIk(object):
-    def __init__(self, tube1, tube2, tube3, K_p, damping_constant, damping):
+    def __init__(self, system_parameters, K_p, damping_constant, damping, home_offset, max_retraction):
         # Defining parameters of each tube, numbering starts with the most inner tube
         # length, length_curved, diameter_inner, diameter_outer, stiffness, torsional_stiffness, x_curvature, y_curvature
-        self.tube1 = tube1
-        self.tube2 = tube2
-        self.tube3 = tube3
+        self.system_parameters = system_parameters
+        self.tube1 = system_parameters[0][0]
+        self.tube2 = system_parameters[0][1]
+        self.tube3 = system_parameters[0][2]
         self.K_p = K_p
         self.damping_constant = damping_constant
         self.damping = damping
         self.eps = 1e-6
+        self.home_offset = home_offset
+        self.max_retraction = max_retraction
 
     def extension_limits(self, betas):
         # Apply extension joint constraints, rotation constraints applied through joint_spaces.
         tube_lengths = np.array([self.tube1.L, self.tube2.L, self.tube3.L])
+        max_length = -self.home_offset - self.max_retraction
         # Ensure all joints below zero
         betas[betas > 0] = 0.0
         # Ensure each joint is not below the maximum length
-        betas[0] = max(betas[0], -tube_lengths[0])
-        betas[1] = max(betas[1], -tube_lengths[1])
-        betas[2] = max(betas[2], -tube_lengths[2])
+        betas[0] = np.clip(betas[0], max_length[0], -self.home_offset[0])
+        betas[1] = np.clip(betas[1], max_length[1], -self.home_offset[1])
+        betas[2] = np.clip(betas[2], max_length[2], -self.home_offset[2])
         for i in range(1, 3):
             # Ordering is reversed, since we have innermost as last whereas in constraints its first.
             # Bi-1 <= Bi
@@ -39,22 +45,19 @@ class JacobianIk(object):
             betas[i - 1] = max(betas[i - 1], tube_lengths[i] - tube_lengths[i - 1] + betas[i] + self.eps)
         return betas
 
-    def ik_solver(self, x_d, q, q_0, uz_0, u1_xy_0):
+    def ik_solver(self, x_d, q):
         error_threshold = 5.0e-4
         max_steps = 10
-        # no forces at tip
-        f = np.array([0, 0, 0]).reshape(3, 1)
-        CTR = CTR_Model(tube1, tube2, tube3, f, q, q_0, 0.01, 1)
-        J = CTR.jac(np.concatenate((u1_xy_0, uz_0), axis=None))  # estimate jacobian matrix
-        x_c = CTR.r[-1, :]
+        CTR = Model(self.ctr_parameters)
+        x_c = CTR.forward_kinematics(q, 0)
         x_d_array = x_d
         x_c_array = x_c
         q_array = q
         for i in range(0,max_steps):
+            print(q)
             del_x_d = x_d - x_c
-            CTR = CTR_Model(tube1, tube2, tube3, f, q, q_0, 0.01, 1)
-            J = CTR.jac(np.concatenate((u1_xy_0, uz_0), axis=None))  # estimate jacobian matrix
-            x_c = CTR.r[-1, :]
+            J = CTR.jac(q)
+            x_c = CTR.forward_kinematics(q, 0)
             K_p = self.K_p * np.eye(3)
             if self.damping:
                 inv_J = np.linalg.pinv(np.transpose(J) @ J + self.damping_constant * np.eye(3)) @ np.transpose(J)
@@ -64,10 +67,11 @@ class JacobianIk(object):
                 print("J inverse is ill-conditioned.")
             del_q = (inv_J @ (del_x_d.reshape(3,1) + K_p @ (x_d - x_c).reshape(3, 1))).flatten()
             q += del_q
-            if np.any(q[:3] > 0.0):
-                print(q[:3])
-                print('Joint limits reached...')
-                break
+            q[:3] = self.extension_limits(q[:3] + del_q[:3])
+            #if np.any(q[:3] > 0.0):
+            #    print(q[:3])
+            #    print('Joint limits reached...')
+            #    break
             print('error: ' + str(np.linalg.norm(x_d - x_c)))
             x_d_array = np.append(x_d_array, x_d, axis=0)
             x_c_array = np.append(x_c_array, x_c, axis=0)
@@ -76,29 +80,33 @@ class JacobianIk(object):
                 break
         return x_d_array.reshape(-1, 3), x_c_array.reshape(-1, 3), q_array.reshape(-1, 6)
 
-    def path_following(self, path_array, q, q_0, uz_0, u1_xy_0):
-        f = np.array([0, 0, 0]).reshape(3, 1)
-        CTR = CTR_Model(self.tube1, self.tube2, self.tube3, f, q, q_0, 0.01, 1)
-        J = CTR.jac(np.concatenate((u1_xy_0, uz_0), axis=None))  # estimate jacobian matrix
-        x_c = CTR.r[-1, :]
+    def path_following(self, path_array, q):
+        CTR = Model(self.system_parameters)
+        x_c = CTR.forward_kinematics(q, 0)
         del_x_d_array = np.diff(path_array, axis=0, prepend=x_c.reshape(1,3))
-        x_d_array = path_array[0, :].reshape(1,3)
+        x_d_array = path_array[0,:].reshape(1,3)
         x_c_array = x_c
         q_array = q.reshape(1,6)
         for i in range(0, path_array.shape[0]):
-            CTR = CTR_Model(self.tube1, self.tube2, self.tube3, f, q, q_0, 0.01, 1)
-            J = CTR.jac(np.concatenate((u1_xy_0, uz_0), axis=None))  # estimate jacobian matrix
-            x_c = CTR.r[-1, :]
-            K_p = 2.0 * np.eye(3)
+            J = CTR.jac(q, 0)
+            x_c = CTR.forward_kinematics(q, 0)
+            x_d = path_array[i,:]
+            K_p = self.K_p * np.eye(3)
             del_x_d = del_x_d_array[i,:].reshape(3,1)
-            x_d = path_array[i, :]
-            del_q = (np.linalg.pinv(J) @ (del_x_d + K_p @ (x_d - CTR.r[-1, :]).reshape(3, 1))).flatten()
-            # Apply joint constraints
+            if self.damping:
+                inv_J = np.transpose(J) @ np.linalg.pinv(J@ np.transpose(J) + self.damping_constant * np.eye(3))
+            else:
+                inv_J = np.linalg.pinv(J)
+            if not np.isfinite(np.linalg.cond(J)):
+                print("J inverse is ill-conditioned.")
+            del_q = (inv_J @ (del_x_d.reshape(3,1) + K_p @ (x_d - x_c).reshape(3, 1))).flatten()
             q += del_q
+            #q[:3] = self.extension_limits(q[:3] + del_q[:3])
+            #q[3:] = q[3:]
             if np.any(q[:3] > 0.0):
                 print(q[:3])
                 print('Joint limits reached...')
-                return x_d_array.reshape(-1, 3), x_c_array.reshape(-1, 3), q_array.reshape(-1, 6)
+                break
             print('error: ' + str(np.linalg.norm(x_d - x_c)))
             x_d_array = np.concatenate((x_d_array, x_d.reshape(1, 3)), axis=0)
             q_array = np.concatenate((q_array, q.reshape(1, 6)), axis=0)
@@ -145,7 +153,9 @@ if __name__ == '__main__':
         q = np.array([-0.2858, -0.2025, -0.0945, 0, 0, 0])
         # Initial position of joints
         q_0 = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-        jacobian_ik = JacobianIk(tube1, tube2, tube3, K_p, damping_constant, damping)
+        home_offset = np.zeros(3)
+        max_retraction = np.array([-tube1.L, -tube2.L, -tube3.L])
+        jacobian_ik = JacobianIk(tube1, tube2, tube3, K_p, damping_constant, damping, home_offset, max_retraction)
         CTR = CTR_Model(tube1, tube2, tube3, f, q, q_0, 0.01, 1)
         J = CTR.jac(np.concatenate((u1_xy_0, uz_0), axis=None))
         x_d = CTR.r[-1, :]

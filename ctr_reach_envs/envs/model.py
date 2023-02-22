@@ -172,3 +172,16 @@ class Model(object):
             tip_pos[k] = b
 
         return r, u_z_end, tip_pos
+
+    # Estimating Jacobian with respect to inputs (tubes' rotation and translation)
+    def jac(self, q, system):
+        eps = 1.e-4
+        jac = np.zeros((3, 6))
+        r = self.forward_kinematics(q, system)
+        for i in range(0, 6):
+            q[i] = q[i] + eps
+            r_eps = self.forward_kinematics(q, system)
+            r_perturb = (r_eps - r) / eps
+            jac[:, i] = r_perturb.reshape(3, )
+            q[i] = q[i] - eps
+        return jac

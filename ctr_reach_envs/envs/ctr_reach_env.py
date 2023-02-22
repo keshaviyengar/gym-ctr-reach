@@ -34,8 +34,8 @@ class CtrReachEnv(gym.GoalEnv):
         self.max_steps_per_episode = max_steps_per_episode
         self.n_substeps = n_substeps
         # Other parameters and settings
-        self.starting_joints = initial_joints
-        self.desired_joints = initial_joints
+        self.starting_joints = np.concatenate((home_offset, np.zeros(3)))
+        self.desired_joints = np.concatenate((home_offset, np.zeros(3)))
         self.constrain_alpha = constrain_alpha
         self.evaluation = evaluation
         self.resample_joints = resample_joints

@@ -40,3 +40,50 @@ def helix_traj(num_points, num_revs, R, a, xyz=[0,0,0]):
     y = R * np.sin(t) + xyz[1]
     z = a * t + xyz[2]
     return x,y,z
+
+
+def velocity_based_line_traj(t_end, num_t, v, x_start, y_start, z_start):
+    t = np.linspace(0, t_end, num=num_t)
+    x = [x_start]
+    y = [y_start]
+    z = [z_start]
+    prev_x = x_start
+    prev_y = y_start
+    prev_z = z_start
+    for i in t:
+        del_x = v[0]*i
+        del_y = v[1]*i
+        del_z = v[2]*i
+        x_new = prev_x + del_x
+        y_new = prev_y + del_y
+        z_new = prev_z + del_z
+        x.append(x_new)
+        y.append(y_new)
+        z.append(z_new)
+        prev_x = x_new
+        prev_y = y_new
+        prev_z = z_new
+    return x,y,z
+
+def velocity_based_circle_traj(t_end, num_t, w, radius, x_start, y_start, z_start):
+    t = np.linspace(0, t_end, num=num_t)
+    x = [x_start]
+    y = [y_start]
+    z = [z_start]
+    prev_x = x_start
+    prev_y = y_start
+    prev_z = z_start
+    for i in t:
+        del_x = radius*w*np.cos(w*i)
+        del_y = -radius*w*np.sin(w*i)
+        del_z = 0
+        x_new = prev_x + del_x
+        y_new = prev_y + del_y
+        z_new = prev_z + del_z
+        x.append(x_new)
+        y.append(y_new)
+        z.append(z_new)
+        prev_x = x_new
+        prev_y = y_new
+        prev_z = z_new
+    return x,y,z

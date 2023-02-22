@@ -1,5 +1,5 @@
 import gym
-import ctr_generic_envs
+import ctr_reach_envs
 import numpy as np
 
 from stable_baselines import DDPG, HER
@@ -49,24 +49,27 @@ def run_episode(env, model, goal=None, system_idx=None):
         obs_dict = env.convert_obs_to_dict(obs)
         achieved_goals.append(obs_dict['achieved_goal'])
         desired_goals.append(obs_dict['desired_goal'])
-        r1.append(env.env.model.r1)
-        r2.append(env.env.model.r2)
-        r3.append(env.env.model.r3)
+        r1.append(env.env.env.env.model.r1)
+        r2.append(env.env.env.env.model.r2)
+        r3.append(env.env.env.env.model.r3)
         # After each step, store achieved goal as well as rs
         if done or infos.get('is_success', False):
             print("Tip Error: " + str(infos.get('errors_pos')*1000))
-            print("Achieved joint: " + str(np.rad2deg(infos.get('q_achieved'))))
+            print("Achieved joint: " + str(infos.get('q_achieved')))
             break
-    return achieved_goals, desired_goals, r1, r2, r3
+    if infos.get('errors_pos') > 0.005:
+        print("Could not get close to starting position...")
+        return
+    return achieved_goals, desired_goals, infos['q_achieved'], r1, r2, r3
 
-def trajectory_controller(model, env, x_traj, y_traj, z_traj, system_idx, select_systems):
+def trajectory_controller(model, env, path_array, system_idx, select_systems):
     achieved_goals = list()
     desired_goals = list()
     r1 = list()
     r2 = list()
     r3 = list()
     # Get to first point in trajectory then start recording
-    goal = np.array([x_traj[0], y_traj[0], z_traj[0]])
+    goal = path_array[0, :]
     if len(select_systems) > 1:
         obs = env.reset(**{'system_idx': np.where(system_idx == np.array(select_systems))[0][0],
                            'goal': goal})
@@ -80,6 +83,9 @@ def trajectory_controller(model, env, x_traj, y_traj, z_traj, system_idx, select
         # After each step, store achieved goal as well as rs
         if done or infos.get('is_success', False):
             break
+    if infos['errors_pos'] > 0.005:
+        print("Could not get close to starting position... error: " + str(infos.get('errors_pos')))
+        return
 
     achieved_goals.append(obs_dict['achieved_goal'])
     desired_goals.append(obs_dict['desired_goal'])
@@ -87,16 +93,16 @@ def trajectory_controller(model, env, x_traj, y_traj, z_traj, system_idx, select
     r2.append(env.env.model.r2)
     r3.append(env.env.model.r3)
 
-    for i in range(1, len(x_traj)):
-        goal = np.array([x_traj[i], y_traj[i], z_traj[i]])
+    for i in range(1, path_array.shape[0]):
+        goal = path_array[i, :]
         if len(select_systems) > 1:
             obs = env.reset(**{'system_idx': np.where(system_idx == np.array(select_systems))[0][0],
                                'goal': goal})
         else:
             obs = env.reset(**{'goal': goal})
         # Set desired goal as x,y,z trajectory point in obs
-        print(str(i) + ' out of ' + str(len(x_traj)))
-        for _ in range(20):
+        print(str(i) + ' out of ' + str(path_array.shape[0]))
+        for _ in range(2):
             action, _ = model.predict(obs, deterministic=True)
             action = np.clip(action, env.action_space.low, env.action_space.high)
             obs, reward, done, infos = env.step(action)
@@ -109,4 +115,5 @@ def trajectory_controller(model, env, x_traj, y_traj, z_traj, system_idx, select
             # After each step, store achieved goal as well as rs
             if done or infos.get('is_success', False):
                 break
+        print('error: ' + str(infos['errors_pos']))
     return achieved_goals, desired_goals, r1, r2, r3
