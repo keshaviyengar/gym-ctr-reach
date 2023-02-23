@@ -79,5 +79,46 @@ def prop2ego(joint):
     rel_alpha = np.diff(alphas, prepend=0)
     return np.concatenate((rel_beta, rel_alpha))
 
+# Conversion between normalized and un-normalized joints
+def B_to_B_U(B, *L_args):
+    # Ensure number of tubes is either 2 or 3
+    assert len(L_args) in [2, 3], 'length of length args: ' + str(len(L_args)) + str(L_args)
+    num_tubes = len(L_args)
+    B = np.append(B, 1)
+    if num_tubes == 2:
+        (L_1, L_2) = L_args
+        M_B = np.array([[-L_1, 0],
+                        [-L_1, L_1 - L_2]])
 
+    else:
+        (L_1, L_2, L_3) = L_args
+        M_B = np.array([[-L_1, 0, 0],
+                        [-L_1, L_1 - L_2, 0],
+                        [-L_1, L_1 - L_2, L_2 - L_3]])
 
+    normalized_B = np.block([[0.5 * M_B, 0.5 * np.matmul(M_B, np.ones((num_tubes, 1)))],
+                             [np.zeros((1, num_tubes)), 1]])
+    B_U = np.around(np.matmul(np.linalg.inv(normalized_B), B), 6)
+    return B_U[:num_tubes]
+
+# Conversion between normalized and un-normalized joints
+def B_U_to_B(B_U, *L_args):
+    # Ensure number of tubes is either 2 or 3
+    assert len(L_args) in [2, 3], 'length of length args: ' + str(len(L_args)) + str(L_args)
+    num_tubes = len(L_args)
+    if num_tubes == 2:
+        (L_1, L_2) = L_args
+        B_U = np.append(B_U, 1)
+        M_B = np.array([[-L_1, 0],
+                        [-L_1, L_1 - L_2]])
+    else:
+        (L_1, L_2, L_3) = L_args
+        B_U = np.append(B_U, 1)
+        M_B = np.array([[-L_1, 0, 0],
+                        [-L_1, L_1 - L_2, 0],
+                        [-L_1, L_1 - L_2, L_2 - L_3]])
+
+    normalized_B = np.block([[0.5 * M_B, 0.5 * np.matmul(M_B, np.ones((num_tubes, 1)))],
+                             [np.zeros((1, num_tubes)), 1]])
+    B = np.matmul(normalized_B, B_U)
+    return B[:num_tubes]

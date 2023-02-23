@@ -48,7 +48,7 @@ class JacobianIk(object):
     def ik_solver(self, x_d, q):
         error_threshold = 5.0e-4
         max_steps = 10
-        CTR = Model(self.ctr_parameters)
+        CTR = Model(self.system_parameters)
         x_c = CTR.forward_kinematics(q, 0)
         x_d_array = x_d
         x_c_array = x_c
@@ -56,22 +56,22 @@ class JacobianIk(object):
         for i in range(0,max_steps):
             print(q)
             del_x_d = x_d - x_c
-            J = CTR.jac(q)
+            J = CTR.jac(q, 0)
             x_c = CTR.forward_kinematics(q, 0)
             K_p = self.K_p * np.eye(3)
             if self.damping:
                 inv_J = np.linalg.pinv(np.transpose(J) @ J + self.damping_constant * np.eye(3)) @ np.transpose(J)
             else:
                 inv_J = np.linalg.pinv(J)
-            if np.isfinite(np.linalg.cond(J)):
+            if not np.isfinite(np.linalg.cond(J)):
                 print("J inverse is ill-conditioned.")
             del_q = (inv_J @ (del_x_d.reshape(3,1) + K_p @ (x_d - x_c).reshape(3, 1))).flatten()
             q += del_q
-            q[:3] = self.extension_limits(q[:3] + del_q[:3])
-            #if np.any(q[:3] > 0.0):
-            #    print(q[:3])
-            #    print('Joint limits reached...')
-            #    break
+            #q[:3] = self.extension_limits(q[:3] + del_q[:3])
+            if np.any(q[:3] > 0.0):
+                print(q[:3])
+                print('Joint limits reached...')
+                break
             print('error: ' + str(np.linalg.norm(x_d - x_c)))
             x_d_array = np.append(x_d_array, x_d, axis=0)
             x_c_array = np.append(x_c_array, x_c, axis=0)

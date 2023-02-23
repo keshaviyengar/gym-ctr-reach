@@ -15,6 +15,7 @@ EXT_TOL = 1e-3
 # Prevent reaching maximum retraction position with causes issues in model
 ZERO_TOL = 1e-4
 
+
 class Obs(object):
     def __init__(self, system_parameters, goal_tolerance_parameters, noise_parameters, initial_joints,
                  joint_representation, home_offset=None, max_retraction=None, max_rotation=None, constrain_alpha=False):
@@ -33,8 +34,6 @@ class Obs(object):
             self.tube_lengths.append(tube_length)
         if max_retraction is None:
             self.max_retraction = -self.tube_lengths[0]
-        else:
-            self.max_retraction = self.home_offset + max_retraction
         if max_rotation is None:
             self.max_rotation = np.inf
         else:
@@ -93,8 +92,8 @@ class Obs(object):
         joint_spaces[0].high[:3] = self.home_offset
         joint_sample_spaces[0].high[:3] = self.home_offset
         # Apply max retraction to low
-        joint_spaces[0].low[:3] = self.max_retraction
-        joint_sample_spaces[0].low[:3] = self.max_retraction
+        joint_spaces[0].low[:3] = self.max_retraction + self.home_offset
+        joint_sample_spaces[0].low[:3] = self.max_retraction + self.home_offset
 
         return joint_spaces, joint_sample_spaces
 
@@ -127,10 +126,10 @@ class Obs(object):
         del_x_y_max = 0.2
         del_z_min = -0.2
         del_z_max = 0.2
-        #del_x_y_min = -0.5
-        #del_x_y_max = 0.5
-        #del_z_min = 0.0
-        #del_z_max = 0.5
+        # del_x_y_min = -0.5
+        # del_x_y_max = 0.5
+        # del_z_min = 0.0
+        # del_z_max = 0.5
 
         # If training a single system, don, include the psi variable indicating system
         if self.num_systems == 1:
@@ -196,13 +195,14 @@ class Obs(object):
         betas = self.joints[:NUM_TUBES]
         alphas = self.joints[NUM_TUBES:]
         # Apply extension joint constraints, rotation constraints applied through joint_spaces.
-        for i in range(1, NUM_TUBES):
-            # Ordering is reversed, since we have innermost as last whereas in constraints its first.
-            # Bi-1 <= Bi
-            # Bi-1 >= Bi - Li-1 + Li
-            betas[i - 1] = min(betas[i - 1], betas[i])
-            betas[i - 1] = max(betas[i - 1], self.tube_lengths[system][i] - self.tube_lengths[system][i - 1] + betas[i])
-
+        L_margin = 0.004
+        betas_U = B_to_B_U(np.flip(betas), self.tube_lengths[system][2], self.tube_lengths[system][1],
+                           self.tube_lengths[system][0] - L_margin)
+        if np.any(betas_U < -1.0) or np.any(betas_U > 1.0):
+            betas_U[betas_U > 1.0] = 1.0
+            betas_U[betas_U < -1.0] = -1.0
+            betas = np.flip(B_U_to_B(betas_U, self.tube_lengths[system][2], self.tube_lengths[system][1],
+                                     self.tube_lengths[system][0] - L_margin))
         self.joints = np.concatenate((betas, alphas))
 
     def sample_goal(self, system):
@@ -211,21 +211,24 @@ class Obs(object):
         :param system: The system to to sample the goal.
         :return: Constrained achievable joint values.
         """
-        counter = 0
-        while True:
-            joint_sample = self.joint_sample_spaces[system].sample()
-            betas = joint_sample[:NUM_TUBES]
-            alphas = joint_sample[NUM_TUBES:]
-            # Apply constraints
-            valid_joint = []
-            for i in range(1, NUM_TUBES):
-                valid_joint.append((betas[i - 1] <= betas[i]) and (
-                        betas[i - 1] + self.tube_lengths[system][i - 1] >= self.tube_lengths[system][i] + betas[i]))
-            counter += 1
-            if all(valid_joint):
-                break
-            if counter > 1000:
-                raise ValueError("Stuck sampling goals...")
+        betas = np.flip(B_U_to_B(np.random.uniform(low=-np.ones(3), high=np.ones(3)), self.max_retraction[2],
+                                 self.max_retraction[1], self.max_retraction[0]))
+        alphas = np.random.uniform(low=-np.ones(3), high=np.ones(3)) * self.joint_sample_spaces[0].high[0]
+
+        # counter = 0
+        # while True:
+        #    joint_sample = self.joint_sample_spaces[system].sample()
+        #    betas = joint_sample[:NUM_TUBES]
+        #    alphas = joint_sample[NUM_TUBES:]
+        #    # Apply constraints
+        #    valid_joint = []
+        #    for i in range(1, NUM_TUBES):
+        #        valid_joint.append((betas[i - 1] <= betas[i]) and (
+        #                betas[i - 1] + self.tube_lengths[system][i - 1] >= self.tube_lengths[system][i] + betas[i]))
+        #    counter += 1
+        #    if all(valid_joint):
+        #        break
+        #    if counter > 1000:
+        #        raise ValueError("Stuck sampling goals...")
         joint_constrain = np.concatenate((betas, alphas))
         return joint_constrain
-

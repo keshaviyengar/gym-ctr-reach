@@ -135,7 +135,7 @@ class CtrReachEnv(gym.GoalEnv):
         """
         # Ensure actions are not NaNs and within action space to enforce constraints
         assert not np.all(np.isnan(action))
-        assert self.action_space.contains(action)
+        #assert self.action_space.contains(action)
         # For n_substeps, repeat the selected action
         for _ in range(self.n_substeps):
             self.trig_obj.set_action(action, self.system)

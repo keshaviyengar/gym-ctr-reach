@@ -76,7 +76,7 @@ class CtrReachHardwareEnv(gym.GoalEnv):
                                              'z': self.env.desired_goal[2]}})
         if self.ros_client.is_connected:
             self.desired_goal_pub.publish(dg_msg)
-        time.sleep(0.5)
+        time.sleep(2.0)
         # Publish new joints and wait
         self.achieved_goal = self.marker_pose[:3]
 
