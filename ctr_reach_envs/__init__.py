@@ -55,7 +55,7 @@ register(
             #         }
             #},
             # New hardware parameters, check stiffness and diameters
-            'ctr_3': {
+            'ctr_0': {
                 'tube_0':
                     {'length': 3.0 * 96.41e-3 + 153.95e-3 + 90.3e-3, 'length_curved': 90e-3, 'diameter_inner': 0.508e-3,
                      'diameter_outer': 0.66e-3, 'stiffness': 7.5e+10, 'torsional_stiffness': 2.5e+10,

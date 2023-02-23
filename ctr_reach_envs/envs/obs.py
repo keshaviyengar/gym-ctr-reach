@@ -34,6 +34,8 @@ class Obs(object):
             self.tube_lengths.append(tube_length)
         if max_retraction is None:
             self.max_retraction = -self.tube_lengths[0]
+        else:
+            self.max_retraction = max_retraction
         if max_rotation is None:
             self.max_rotation = np.inf
         else:
@@ -196,13 +198,13 @@ class Obs(object):
         alphas = self.joints[NUM_TUBES:]
         # Apply extension joint constraints, rotation constraints applied through joint_spaces.
         L_margin = 0.004
-        betas_U = B_to_B_U(np.flip(betas), self.tube_lengths[system][2], self.tube_lengths[system][1],
-                           self.tube_lengths[system][0] - L_margin)
+        betas_U = B_to_B_U(np.flip(betas - self.home_offset), self.max_retraction[2], self.max_retraction[1],
+                           self.max_retraction[0] - L_margin)
         if np.any(betas_U < -1.0) or np.any(betas_U > 1.0):
             betas_U[betas_U > 1.0] = 1.0
             betas_U[betas_U < -1.0] = -1.0
-            betas = np.flip(B_U_to_B(betas_U, self.tube_lengths[system][2], self.tube_lengths[system][1],
-                                     self.tube_lengths[system][0] - L_margin))
+            betas = np.flip(B_U_to_B(betas_U, self.max_retraction[2], self.max_retraction[1],
+                                     self.max_retraction[0] - L_margin))
         self.joints = np.concatenate((betas, alphas))
 
     def sample_goal(self, system):
@@ -211,9 +213,10 @@ class Obs(object):
         :param system: The system to to sample the goal.
         :return: Constrained achievable joint values.
         """
+        L_margin = 0.004
         betas = np.flip(B_U_to_B(np.random.uniform(low=-np.ones(3), high=np.ones(3)), self.max_retraction[2],
-                                 self.max_retraction[1], self.max_retraction[0]))
-        alphas = np.random.uniform(low=-np.ones(3), high=np.ones(3)) * self.joint_sample_spaces[0].high[0]
+                                 self.max_retraction[1], self.max_retraction[0] - L_margin)) + self.home_offset
+        alphas = np.random.uniform(low=-np.ones(3), high=np.ones(3)) * self.joint_sample_spaces[0].high[3]
 
         # counter = 0
         # while True:
