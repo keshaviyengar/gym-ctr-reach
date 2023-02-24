@@ -33,7 +33,7 @@ class Obs(object):
                 tube_length.append(tube.L)
             self.tube_lengths.append(tube_length)
         if max_retraction is None:
-            self.max_retraction = -self.tube_lengths[0]
+            self.max_retraction = self.tube_lengths[0]
         else:
             self.max_retraction = max_retraction
         if max_rotation is None:
@@ -91,11 +91,11 @@ class Obs(object):
                                                                         np.full(NUM_TUBES, np.inf)))
                                                    ))
         # Apply home offsets, TODO: Generalize if want to apply to more than one system
-        joint_spaces[0].high[:3] = self.home_offset
-        joint_sample_spaces[0].high[:3] = self.home_offset
+        joint_spaces[0].high[:3] = -self.home_offset
+        joint_sample_spaces[0].high[:3] = -self.home_offset
         # Apply max retraction to low
-        joint_spaces[0].low[:3] = self.max_retraction + self.home_offset
-        joint_sample_spaces[0].low[:3] = self.max_retraction + self.home_offset
+        joint_spaces[0].low[:3] = -self.max_retraction - self.home_offset
+        joint_sample_spaces[0].low[:3] = -self.max_retraction - self.home_offset
 
         return joint_spaces, joint_sample_spaces
 
@@ -198,13 +198,16 @@ class Obs(object):
         alphas = self.joints[NUM_TUBES:]
         # Apply extension joint constraints, rotation constraints applied through joint_spaces.
         L_margin = 0.004
-        betas_U = B_to_B_U(np.flip(betas - self.home_offset), self.max_retraction[2], self.max_retraction[1],
+        betas_U = B_to_B_U(np.flip(betas + self.home_offset), self.max_retraction[2], self.max_retraction[1],
                            self.max_retraction[0] - L_margin)
         if np.any(betas_U < -1.0) or np.any(betas_U > 1.0):
+            print('constrained...')
+            print('betas: ' + str(betas))
+            print('betas_U: ' + str(betas_U))
             betas_U[betas_U > 1.0] = 1.0
             betas_U[betas_U < -1.0] = -1.0
             betas = np.flip(B_U_to_B(betas_U, self.max_retraction[2], self.max_retraction[1],
-                                     self.max_retraction[0] - L_margin))
+                                     self.max_retraction[0] - L_margin)) - self.home_offset
         self.joints = np.concatenate((betas, alphas))
 
     def sample_goal(self, system):
@@ -215,7 +218,7 @@ class Obs(object):
         """
         L_margin = 0.004
         betas = np.flip(B_U_to_B(np.random.uniform(low=-np.ones(3), high=np.ones(3)), self.max_retraction[2],
-                                 self.max_retraction[1], self.max_retraction[0] - L_margin)) + self.home_offset
+                                 self.max_retraction[1], self.max_retraction[0] - L_margin)) - self.home_offset
         alphas = np.random.uniform(low=-np.ones(3), high=np.ones(3)) * self.joint_sample_spaces[0].high[3]
 
         # counter = 0
