@@ -201,9 +201,6 @@ class Obs(object):
         betas_U = B_to_B_U(np.flip(betas + self.home_offset), self.max_retraction[2], self.max_retraction[1],
                            self.max_retraction[0] - L_margin)
         if np.any(betas_U < -1.0) or np.any(betas_U > 1.0):
-            print('constrained...')
-            print('betas: ' + str(betas))
-            print('betas_U: ' + str(betas_U))
             betas_U[betas_U > 1.0] = 1.0
             betas_U[betas_U < -1.0] = -1.0
             betas = np.flip(B_U_to_B(betas_U, self.max_retraction[2], self.max_retraction[1],

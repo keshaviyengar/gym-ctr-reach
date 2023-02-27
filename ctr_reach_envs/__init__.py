@@ -159,8 +159,8 @@ register(
         },
         'select_systems': [0],
         'constrain_alpha': False,
-        'home_offset': np.array([-235.96e-3 - 2.0 * 96.41e-3, -119.69e-3, -50.75e-3]),
-        'max_retraction': np.array([-97.0e-3, -50e-3, -22.0e-3]),
+        'home_offset': np.array([235.96e-3 + 2.0 * 96.41e-3, 119.69e-3, 50.75e-3]),
+        'max_retraction': np.array([97.0e-3, 50e-3, 22.0e-3]),
         'max_rotation': np.pi / 3,
         # Format is [beta_0, beta_1, ..., beta_n, alpha_0, ..., alpha_n]
         'initial_joints': np.array([-235.96e-3 - 2.0 * 96.41e-3, -119.69e-3, -50.75e-3, 0.0, 0.0, 0.0]),

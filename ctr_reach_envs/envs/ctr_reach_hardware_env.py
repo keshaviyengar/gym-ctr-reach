@@ -38,14 +38,21 @@ class CtrReachHardwareEnv(gym.GoalEnv):
         self.achieved_goal = None
         self.desired_goal = None
         self.marker_pose = None
+        # Load in desired goals from workspace collection
+        headers = np.loadtxt("/home/keshav/ral_2023_results/results/workspace/06_02_23_1449/all_data.csv",
+                             max_rows=1, delimiter=',', dtype=str)
+        workspace_data = np.loadtxt("/home/keshav/ral_2023_results/results/workspace/06_02_23_1449/all_data.csv",
+                                    skiprows=1, delimiter=',')
+        goal_idxs = [np.where(headers=='x')[0][0], np.where(headers=='y')[0][0], np.where(headers=='z')[0][0]]
+        self.goal_points = workspace_data[goal_idxs] / 1000.0
+
 
     def reset(self, goal=None, joints=None):
         # Reset timesteps
         self.achieved_goal = self.marker_pose[:3]
-        if goal is not None:
-            obs = self.env.reset(goal=goal)
-        else:
-            obs = self.env.reset()
+        # Sample goal from workspace collection
+        goal = self.goal_points[:,np.random.randint(self.goal_points.shape[1])]
+        obs = self.env.reset(goal=goal)
         if joints is not None:
             self.env.trig_obj.joints = joints
         dg_msg = roslibpy.Message({'header': roslibpy.Header(frame_id='/entry_point', stamp=roslibpy.Time.now(), seq=1),
@@ -84,6 +91,7 @@ class CtrReachHardwareEnv(gym.GoalEnv):
         done = (reward == 0) or (self.env.t >= self.env.max_steps_per_episode)
         obs['achieved_goal'] = self.achieved_goal
         d = np.linalg.norm(self.achieved_goal - self.env.desired_goal, axis=-1)
+
         info['error'] = d
         info['joints'] = joints
         info['achieved_goal'] = self.achieved_goal
@@ -134,10 +142,10 @@ def load_agent(env_id, env_kwargs, model_path, seed=None):
 if __name__ == '__main__':
     model_path = '/home/keshav/catkin_ws/src/ctr/ctr_policy_ros/example_model/tro_constrain_3/her/' \
                  'CTR-Reach-v0_1/rl_model_3000000_steps.zip'
-    env_kwargs = {'resample_joints': False, 'initial_joints': np.array([-97.0e-3, -50.0e-3, -22.0e-3]),
+    env_kwargs = {'resample_joints': False,
                   'goal_tolerance_parameters': {
             'inc_tol_obs': True, 'final_tol': 0.001, 'initial_tol': 0.020,
-            'N_ts': 200000, 'function': 'constant', 'set_tol': 0.001
+            'N_ts': 200000, 'function': 'constant', 'set_tol': 0.001, 'measure': 'mm'
         }
     }
     env, model = load_agent("CTR-Reach-Hardware-v0", env_kwargs, model_path)
