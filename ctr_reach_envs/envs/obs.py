@@ -167,21 +167,23 @@ class Obs(object):
         :return: Observation object
         """
         # Get trigonometric representation based on if egocentric on proprioceptive
+        noisy_joints = np.random.normal(self.joints, self.q_std_noise)
+        noisy_achieved_goal = np.random.normal(achieved_goal, self.tracking_std_noise)
         assert self.joint_representation in ['egocentric', 'proprioceptive'], "Incorrect joint representation selected."
         if self.joint_representation == 'egocentric':
-            rel_joints = prop2ego(self.joints)
+            rel_joints = prop2ego(noisy_joints)
             trig_joints = joint2rep(rel_joints)
         else:
-            trig_joints = joint2rep(self.joints)
+            trig_joints = joint2rep(noisy_joints)
 
         if self.num_systems > 1:
-            obs = np.concatenate([trig_joints, desired_goal - achieved_goal, np.array([goal_tolerance, system])])
+            obs = np.concatenate([trig_joints, desired_goal - noisy_achieved_goal, np.array([goal_tolerance, system])])
         else:
-            obs = np.concatenate([trig_joints, desired_goal - achieved_goal, np.array([goal_tolerance])])
+            obs = np.concatenate([trig_joints, desired_goal - noisy_achieved_goal, np.array([goal_tolerance])])
 
         self.obs = {
             'observation': obs.copy(),
-            'achieved_goal': achieved_goal.copy(),
+            'achieved_goal': noisy_achieved_goal.copy(),
             'desired_goal': desired_goal.copy()
         }
 
