@@ -116,12 +116,13 @@ if __name__ == '__main__':
     else:
         solving = 'ik'
 
-    exp_names = ['ral_full_noise_20']
+    #exp_names = ['ral_free', 'ral_constrain', 'ral_full_noise_10', 'ral_full_noise_20']
+    exp_names = ['ral_free']
 
     for exp_name in exp_names:
         home_offset = np.array([427.82e-3, 119.69e-3, 50.75e-3])
         max_retraction = np.array([97.0e-3, 50.0e-3, 22.0e-3])
-        model_path = '/home/keshav/ral_2023_results/results/ral-2023/' + exp_name + '/her/CTR-Reach-v0_1/rl_model_1800000_steps.zip'
+        model_path = '/home/keshav/ral_2023_results/new_extension/' + exp_name + '/her/CTR-Reach-v0_1/rl_model_1600000_steps.zip'
         env_kwargs = {'resample_joints': False, 'initial_joints': np.concatenate((-home_offset, np.zeros(3))),
                       'goal_tolerance_parameters': {
                           'inc_tol_obs': True, 'final_tol': 0.001, 'initial_tol': 0.020,
@@ -136,10 +137,10 @@ if __name__ == '__main__':
         K_p = 2.0
         date_time = datetime.now().strftime("%m_%d_%H_%M_%S")
         if path is not None:
-            output_dir = '/home/keshav/ral_2023_results/results/' + solving + '/' + date_time + '/'
+            output_dir = '/home/keshav/ral_2023_results/' + solving + '/' + date_time + '/'
             output_path = output_dir + method + '_' + path + '.csv'
         else:
-            output_dir = '/home/keshav/ral_2023_results/results/' + solving + '/' + date_time + '/'
+            output_dir = '/home/keshav/ral_2023_results/' + solving + '/' + date_time + '/'
             output_path = output_dir + exp_name + '.csv'
         print('output_path: ' + str(output_path))
         if not os.path.isdir(output_dir):

@@ -16,10 +16,10 @@ from plotting_utils import plot_trajectory, animate_trajectory, generic_animate_
 # 4. Create an animation of the robot
 
 if __name__ == '__main__':
-    gen_model_path = "/her/CTR-Reach-v0_1/rl_model_3000000_steps.zip"
-    project_folder = '/home/keshav/ral_2023_results/results/ral-2023/'
+    gen_model_path = "/her/CTR-Reach-v0_1/rl_model_1800000_steps.zip"
+    project_folder = '/home/keshav/ral_2023_results/new_extension/'
     name = 'ral_constrain'
-    selected_systems = [3]
+    selected_systems = [0]
 
     animate = False
     plot_traj = True
@@ -42,8 +42,8 @@ if __name__ == '__main__':
         }
 
     # Env and model names and paths
-    env_id = "CTR-Reach-Hardware-v0"
-    env_kwargs = {'evaluation': True, 'joint_representation': 'egocentric', 'resample_joints': False,
+    env_id = "CTR-Reach-v0"
+    env_kwargs = {'evaluation': True, 'joint_representation': 'egocentric', 'resample_joints': True,
                   'constrain_alpha': False,
                   'goal_tolerance_parameters': {'inc_tol_obs': True, 'initial_tol': 0.020, 'final_tol': 0.001,
                                                 'N_ts': 200000, 'function': 'constant', 'set_tol': 0.001,

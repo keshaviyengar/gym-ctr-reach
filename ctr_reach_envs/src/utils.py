@@ -1,6 +1,7 @@
 import gym
 import ctr_reach_envs
 import numpy as np
+from ctr_reach_envs.envs import CtrReachEnv
 
 from stable_baselines import DDPG, HER
 from stable_baselines.common import set_global_seeds
@@ -50,9 +51,14 @@ def run_episode(env, model, goal=None, system_idx=None, max_steps=None):
         obs_dict = env.convert_obs_to_dict(obs)
         achieved_goals.append(obs_dict['achieved_goal'])
         desired_goals.append(obs_dict['desired_goal'])
-        r1.append(env.env.env.env.model.r1)
-        r2.append(env.env.env.env.model.r2)
-        r3.append(env.env.env.env.model.r3)
+        if isinstance(env.env.env, CtrReachEnv):
+            r1.append(env.env.env.model.r1)
+            r2.append(env.env.env.model.r2)
+            r3.append(env.env.env.model.r3)
+        else:
+            r1.append(env.env.env.env.model.r1)
+            r2.append(env.env.env.env.model.r2)
+            r3.append(env.env.env.env.model.r3)
         qs.append(infos['q_achieved'])
         # After each step, store achieved goal as well as rs
         if done or infos.get('is_success', False):
@@ -88,12 +94,16 @@ def trajectory_controller(model, env, path_array, system_idx, select_systems):
     if infos['errors_pos'] > 0.005:
         print("Could not get close to starting position... error: " + str(infos.get('errors_pos')))
         return
-
     achieved_goals.append(obs_dict['achieved_goal'])
     desired_goals.append(obs_dict['desired_goal'])
-    r1.append(env.env.env.env.model.r1)
-    r2.append(env.env.env.env.model.r2)
-    r3.append(env.env.env.env.model.r3)
+    if isinstance(env.env.env, CtrReachEnv):
+        r1.append(env.env.env.model.r1)
+        r2.append(env.env.env.model.r2)
+        r3.append(env.env.env.model.r3)
+    else:
+        r1.append(env.env.env.env.model.r1)
+        r2.append(env.env.env.env.model.r2)
+        r3.append(env.env.env.env.model.r3)
     qs.append(infos['q_achieved'])
     eps = list()
     steps = list()
@@ -116,9 +126,14 @@ def trajectory_controller(model, env, path_array, system_idx, select_systems):
             obs_dict = env.convert_obs_to_dict(obs)
             achieved_goals.append(obs_dict['achieved_goal'])
             desired_goals.append(obs_dict['desired_goal'])
-            r1.append(env.env.env.env.model.r1)
-            r2.append(env.env.env.env.model.r2)
-            r3.append(env.env.env.env.model.r3)
+            if isinstance(env.env.env, CtrReachEnv):
+                r1.append(env.env.env.model.r1)
+                r2.append(env.env.env.model.r2)
+                r3.append(env.env.env.model.r3)
+            else:
+                r1.append(env.env.env.env.model.r1)
+                r2.append(env.env.env.env.model.r2)
+                r3.append(env.env.env.env.model.r3)
             qs.append(infos['q_achieved'])
             # After each step, store achieved goal as well as rs
             if done or infos.get('is_success', False):

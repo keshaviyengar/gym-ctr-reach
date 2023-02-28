@@ -39,19 +39,18 @@ class CtrReachHardwareEnv(gym.GoalEnv):
         self.desired_goal = None
         self.marker_pose = None
         # Load in desired goals from workspace collection
-        headers = np.loadtxt("/home/keshav/ral_2023_results/results/workspace/06_02_23_1449/all_data.csv",
+        headers = np.loadtxt("/home/keshav/ral_2023_results/workspace/random/28_02_23_1422/all_data.csv",
                              max_rows=1, delimiter=',', dtype=str)
-        workspace_data = np.loadtxt("/home/keshav/ral_2023_results/results/workspace/06_02_23_1449/all_data.csv",
+        workspace_data = np.loadtxt("/home/keshav/ral_2023_results/workspace/random/28_02_23_1422/all_data.csv",
                                     skiprows=1, delimiter=',')
         goal_idxs = [np.where(headers=='x')[0][0], np.where(headers=='y')[0][0], np.where(headers=='z')[0][0]]
-        self.goal_points = workspace_data[goal_idxs] / 1000.0
-
+        self.goal_points = workspace_data[:, goal_idxs]
 
     def reset(self, goal=None, joints=None):
         # Reset timesteps
         self.achieved_goal = self.marker_pose[:3]
         # Sample goal from workspace collection
-        goal = self.goal_points[:,np.random.randint(self.goal_points.shape[1])]
+        goal = self.goal_points[np.random.randint(self.goal_points.shape[1]), :]
         obs = self.env.reset(goal=goal)
         if joints is not None:
             self.env.trig_obj.joints = joints
@@ -86,6 +85,8 @@ class CtrReachHardwareEnv(gym.GoalEnv):
         time.sleep(2.0)
         # Publish new joints and wait
         self.achieved_goal = self.marker_pose[:3]
+        # Append achieved goal to goal_points
+        self.goal_points = np.vstack([self.goal_points, self.achieved_goal.reshape(1, 3)])
 
         reward = self.compute_reward(self.achieved_goal, self.env.desired_goal, dict())
         done = (reward == 0) or (self.env.t >= self.env.max_steps_per_episode)

@@ -16,11 +16,11 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == '__main__':
-    gen_model_path = "/her/CTR-Reach-v0_1/rl_model_3000000_steps.zip"
+    gen_model_path = "/her/CTR-Reach-v0_1/rl_model_1800000_steps.zip"
 
-    project_folder = '/home/keshav/ral_2023_results/results/ral-2023/'
+    project_folder = '/home/keshav/ral_2023_results/new_extension/'
     name = 'ral_constrain'
-    selected_systems = [3]
+    selected_systems = [0]
     path_type = 'line'
 
     noisy_env = False
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         x_points, y_points, z_points = circle_traj(20, 0.005, 0.0, 0.04, 0.0025)
     # Run through trajectory controller and save goals and shape
     path_array = np.vstack((x_points, y_points, z_points)).T
-    achieved_goals, desired_goals, r1, r2, r3 = trajectory_controller(model, env, path_array, 0, selected_systems)
+    achieved_goals, desired_goals, qs, r1, r2, r3, eps, steps = trajectory_controller(model, env, path_array, 0, selected_systems)
 
     errors = np.linalg.norm(np.array(achieved_goals) - np.array(desired_goals), axis=1)
     print('mean tracking error: ' + str(np.mean(errors) * 1000))
