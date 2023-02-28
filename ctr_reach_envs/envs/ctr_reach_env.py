@@ -14,8 +14,7 @@ class CtrReachEnv(gym.GoalEnv):
     def __init__(self, ctr_systems_parameters, goal_tolerance_parameters, noise_parameters, joint_representation,
                  initial_joints, constrain_alpha, extension_action_limit, rotation_action_limit, max_steps_per_episode,
                  n_substeps, evaluation, select_systems, home_offset, max_retraction, max_rotation,
-                 resample_joints=True,
-                 length_based_sample=False, domain_rand=0.0):
+                 resample_joints=True, length_based_sample=False, domain_rand=0.0):
 
         # Load in all system parameters
         self.ctr_system_parameters = list()

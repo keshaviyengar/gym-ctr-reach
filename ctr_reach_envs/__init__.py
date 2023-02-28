@@ -155,7 +155,7 @@ register(
         'noise_parameters': {
             # 0.001 is the gear ratio
             # 0.001 is also the tracking std deviation for now for testing.
-            'rotation_std': np.deg2rad(0), 'extension_std': 0.001 * np.deg2rad(0), 'tracking_std': 0.0
+            'rotation_std': np.deg2rad(5), 'extension_std': 0.001 * np.deg2rad(5), 'tracking_std': 0.001
         },
         'select_systems': [0],
         'constrain_alpha': False,
