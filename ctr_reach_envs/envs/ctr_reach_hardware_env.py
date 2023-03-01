@@ -50,7 +50,10 @@ class CtrReachHardwareEnv(gym.GoalEnv):
         # Reset timesteps
         self.achieved_goal = self.marker_pose[:3]
         # Sample goal from workspace collection
-        goal = self.goal_points[np.random.randint(self.goal_points.shape[1]), :]
+        # Ensure distance to next goal is somewhat far away
+        goal = self.achieved_goal
+        while np.linalg.norm(self.achieved_goal - goal) < 0.010:
+            goal = self.goal_points[np.random.randint(self.goal_points.shape[0]), :]
         obs = self.env.reset(goal=goal)
         if joints is not None:
             self.env.trig_obj.joints = joints
