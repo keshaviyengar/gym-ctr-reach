@@ -195,18 +195,21 @@ class Obs(object):
         :param action: Array of rotation and extensions for each tube.
         :param system: The selected system.
         """
-        self.joints = np.clip(self.joints + action, self.joint_spaces[system].low, self.joint_spaces[system].high)
-        betas = self.joints[:NUM_TUBES]
-        alphas = self.joints[NUM_TUBES:]
+        joints = np.copy(self.joints)
+        joints = np.clip(joints + action, self.joint_spaces[system].low, self.joint_spaces[system].high)
+        betas = joints[:NUM_TUBES]
+        alphas = joints[NUM_TUBES:]
         # Apply extension joint constraints, rotation constraints applied through joint_spaces.
         L_margin = 0.004
         betas_U = B_to_B_U(np.flip(betas + self.home_offset), self.max_retraction[2], self.max_retraction[1],
                            self.max_retraction[0] - L_margin)
         if np.any(betas_U < -1.0) or np.any(betas_U > 1.0):
-            betas_U[betas_U > 1.0] = 1.0
-            betas_U[betas_U < -1.0] = -1.0
-            betas = np.flip(B_U_to_B(betas_U, self.max_retraction[2], self.max_retraction[1],
-                                     self.max_retraction[0] - L_margin)) - self.home_offset
+            # Make betas previous
+            betas = self.joints[:NUM_TUBES]
+            #betas_U[betas_U > 1.0] = 1.0
+            #betas_U[betas_U < -1.0] = -1.0
+            #betas = np.flip(B_U_to_B(betas_U, self.max_retraction[2], self.max_retraction[1],
+            #                         self.max_retraction[0] - L_margin)) - self.home_offset
         self.joints = np.concatenate((betas, alphas))
 
     def sample_goal(self, system):

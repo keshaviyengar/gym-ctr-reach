@@ -21,7 +21,7 @@ def data_line(episode, step, joints, achieved_goal, desired_goal, error):
 
 def drl_path_following(env, model, path_array, output_path):
     achieved_goals, desired_goals, qs, r1, r2, r3, eps, steps = trajectory_controller(model, env, path_array, 0, [3])
-    with open(output_path, 'w+') as f:
+    with open(output_path, 'a') as f:
         writer = csv.writer(f)
         for ag, dg, joint, ep, step in zip(achieved_goals, desired_goals, qs, eps, steps):
             error = np.linalg.norm(ag - dg)
@@ -40,13 +40,13 @@ def drl_ik_solver(env, model, episode, desired_goal=None, initial_joints=None, o
     # Move to starting position
     time.sleep(0.5)
     achieved_goals, desired_goals, qs, r1, r2, r3 = run_episode(env, model, desired_goal)
-    with open(output_path, 'w+') as f:
+    with open(output_path, 'a') as f:
         writer = csv.writer(f)
         step = 0
         for ag, dg, joint in zip(achieved_goals, desired_goals, qs):
             error = np.linalg.norm(ag - dg)
             step += 1
-            writer.writerow(data_line(0, step, joint, ag, dg, np.array([error])))
+            writer.writerow(data_line(episode, step, joint, ag, dg, np.array([error])))
     return achieved_goals, desired_goals, qs, r1, r2, r3
 
 
@@ -116,13 +116,12 @@ if __name__ == '__main__':
     else:
         solving = 'ik'
 
-    #exp_names = ['ral_free', 'ral_constrain', 'ral_full_noise_10', 'ral_full_noise_20']
-    exp_names = ['ral_free']
+    exp_names = ['ral_full_noise_10', 'ral_full_noise_20']
 
     for exp_name in exp_names:
         home_offset = np.array([427.82e-3, 119.69e-3, 50.75e-3])
         max_retraction = np.array([97.0e-3, 50.0e-3, 22.0e-3])
-        model_path = '/home/keshav/ral_2023_results/new_extension/' + exp_name + '/her/CTR-Reach-v0_1/rl_model_1600000_steps.zip'
+        model_path = '/home/keshav/ral_2023_results/new_extension/' + exp_name + '/her/CTR-Reach-v0_1/rl_model_2000000_steps.zip'
         env_kwargs = {'resample_joints': False, 'initial_joints': np.concatenate((-home_offset, np.zeros(3))),
                       'goal_tolerance_parameters': {
                           'inc_tol_obs': True, 'final_tol': 0.001, 'initial_tol': 0.020,

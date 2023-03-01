@@ -62,7 +62,7 @@ def run_episode(env, model, goal=None, system_idx=None, max_steps=None):
         qs.append(infos['q_achieved'])
         # After each step, store achieved goal as well as rs
         if done or infos.get('is_success', False):
-            print("Tip Error: " + str(infos.get('errors_pos')*1000))
+            print("Tip Error: " + str(infos.get('error')*1000))
             print("Achieved joint: " + str(infos.get('q_achieved')))
             break
     if infos.get('errors_pos') > 0.005:
